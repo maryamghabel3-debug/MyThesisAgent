@@ -1,0 +1,82 @@
+[
+  {
+    "original_citation": "Schmidt, N. B., et al. (2016). The Young Schema Questionnaire: A Rasch analysis. European Journal of Psychological Assessment, 32(4), 314-323.",
+    "title": "The Young Schema Questionnaire: A Rasch analysis",
+    "authors": [
+      "Schmidt, N. B."
+    ],
+    "year": 2016,
+    "journal_or_publisher": "European Journal of Psychological Assessment",
+    "language": "en",
+    "claimed_relevance": "پشتیبانی از روایی پرسشنامه طرحواره یانگ در بخش روش",
+    "keywords": [
+      "Young Schema Questionnaire",
+      "Rasch analysis",
+      "early maladaptive schemas"
+    ],
+    "interactive_findings": [
+      {
+        "found": true,
+        "status": "METADATA_MISMATCH",
+        "url": "https://doi.org/10.1080/00050067.2021.1979885",
+        "evidence": "Yalcin, Marais & Lee (2021) Revisions to the Young Schema Questionnaire using Rasch analysis: the YSQ-R. Australian Psychologist — تنها تحلیل راش منتشرشدهٔ پرسشنامه یانگ؛ نویسنده/سال/مجله با استناد «اشمیت ۲۰۱۶، EJPA» نمی‌خواند",
+        "tool": "web_search + OpenAlex/Crossref (جلسه تعاملی)",
+        "checked_at": "2026-09-15T10:30:00Z",
+        "note": "عنوان دقیق در سه مسیر یافت نشد؛ نزدیک‌ترین رکورد، مقالهٔ متفاوتی است (یالچین ۲۰۲۱)"
+      }
+    ]
+  },
+  {
+    "original_citation": "Saggino, A., et al. (2018). The relationship between Early Maladaptive Schemas and Decision Making in uncertain environments. Personality and Individual Differences, 123, 1-6.",
+    "title": "The relationship between Early Maladaptive Schemas and Decision Making in uncertain environments",
+    "authors": [
+      "Saggino, A."
+    ],
+    "year": 2018,
+    "journal_or_publisher": "Personality and Individual Differences",
+    "language": "en",
+    "claimed_relevance": "ارتباط طرحواره‌های ناسازگار اولیه با تصمیم‌گیری (استناد مستقیم در فصل دوم)",
+    "keywords": [
+      "early maladaptive schemas",
+      "decision making",
+      "uncertain"
+    ],
+    "interactive_findings": [
+      {
+        "found": false,
+        "url": "https://doi.org/10.3389/fpsyg.2018.00312",
+        "evidence": "ساگینو پژوهشگر واقعی حوزهٔ طرحواره است (نسخهٔ ایتالیایی YSQ‑L3، Frontiers in Psychology 2018) اما مقاله‌ای با عنوان «رابطهٔ طرحواره‌های ناسازگار اولیه و تصمیم‌گیری» در وب/نمایه‌ها یافت نشد",
+        "tool": "web_search + OpenAlex (جلسه تعاملی)",
+        "checked_at": "2026-09-15T10:40:00Z",
+        "note": "جست‌وجوی تعاملی هم رکورد دقیقی نیافت؛ وضعیت نامطمئن حفظ می‌شود"
+      }
+    ]
+  },
+  {
+    "original_citation": "Cantinotti, M., et al. (2021). The mediating role of early maladaptive schemas between adverse childhood experiences and gambling problems in adulthood. Journal of Gambling Studies, 37(2), 485-502.",
+    "title": "The mediating role of early maladaptive schemas between adverse childhood experiences and gambling problems in adulthood",
+    "authors": [
+      "Cantinotti, M."
+    ],
+    "year": 2021,
+    "journal_or_publisher": "Journal of Gambling Studies",
+    "language": "en",
+    "claimed_relevance": "نقش میانجی طرحواره‌ها (استناد در بخش تعریف موضوع پروپوزال)",
+    "keywords": [
+      "early maladaptive schemas",
+      "gambling",
+      "adverse childhood experiences",
+      "mediating"
+    ],
+    "interactive_findings": [
+      {
+        "found": false,
+        "url": "",
+        "evidence": "جست‌وجوی تعاملی: هیچ مقاله‌ای از هیچ نویسنده‌ای با نام خانوادگی کانتینوتی دربارهٔ طرحواره/قمار یافت نشد؛ ادبیات واقعیِ میانجی‌گری طرحواره‌ها در قمار با نویسندگان دیگر است",
+        "tool": "web_search + OpenAlex author search (جلسه تعاملی)",
+        "checked_at": "2026-09-15T10:50:00Z",
+        "note": "سه مسیر (وب، نمایهٔ نویسندگان، عنوان دقیق) بدون نتیجه؛ مدرک متقن علیه وجود منبع پیدا نشد، پس اعلام جعلی نمی‌شود"
+      }
+    ]
+  }
+]

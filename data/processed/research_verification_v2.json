@@ -1,0 +1,384 @@
+{
+  "generated_at": "2026-09-15T05:05:29+00:00",
+  "protocol": "multisource-validation-v2",
+  "environment": {
+    "automated_databases": [
+      "openalex",
+      "crossref",
+      "europepmc",
+      "pubmed",
+      "doaj"
+    ],
+    "semantic_scholar_key_present": false,
+    "tavily_key_present": false,
+    "interactive_tools_note": "web_search و fetch_page فقط در جلسهٔ تعاملی ایجنت در دسترس‌اند؛ از پایتون فراخوانی نمی‌شوند. نتایج آن‌ها باید دستی با مدرک وارد شود."
+  },
+  "summary": {
+    "METADATA_MISMATCH": 1,
+    "NOT_FOUND_AFTER_MULTISOURCE_SEARCH": 2,
+    "UNVERIFIED_ACCESS_LIMITATION": 9
+  },
+  "results": [
+    {
+      "original_citation": "Schmidt, N. B., et al. (2016). The Young Schema Questionnaire: A Rasch analysis. European Journal of Psychological Assessment, 32(4), 314-323.",
+      "normalized_title": "young schema questionnaire rasch analysis",
+      "authors": [
+        "Schmidt, N. B."
+      ],
+      "year": 2016,
+      "journal_or_publisher": "European Journal of Psychological Assessment",
+      "doi": "10.1080/00050067.2021.1979885",
+      "urls": [
+        "https://doi.org/10.1080/00050067.2021.1979885",
+        "https://openalex.org/W3207224921"
+      ],
+      "databases_checked": [
+        "crossref",
+        "doaj",
+        "europepmc",
+        "openalex",
+        "pubmed",
+        "semantic_scholar"
+      ],
+      "metadata_matches": {
+        "title_similarity": 0.766,
+        "year_ref": 2016,
+        "year_found": 2021,
+        "year_match": false,
+        "first_author_match": false,
+        "venue_match": false,
+        "doi_found": true,
+        "database": "openalex",
+        "url": "https://openalex.org/W3207224921",
+        "evidence_snippet": "Revisions to the Young Schema Questionnaire using Rasch analysis: the YSQ-R"
+      },
+      "relevance_level": "INDIRECT",
+      "relevance_reason": "فقط سازهٔ نظری مرتبط (بدون زمینهٔ مالی/تصمیم‌گیری)",
+      "verification_status": "METADATA_MISMATCH",
+      "evidence_notes": [
+        "[openalex] Revisions to the Young Schema Questionnaire using Rasch analysis: the YSQ-R (2021) — https://openalex.org/W3207224921",
+        "[openalex] Negative Effects of Psychological Treatments: An Exploratory Factor Analysis of the Negative Effects Questionnaire for M (2016) — https://openalex.org/W2472395746",
+        "[openalex] The Mediating Role of Early Maladaptive Schemas in the Relation between Co-Rumination and Depression in Young Adults (2015) — https://openalex.org/W2116933112",
+        "[openalex] The YSQ-R: Predictive Validity and Comparison to the Short and Long Form Young Schema Questionnaire (2023) — https://openalex.org/W4317518415",
+        "[openalex] Psychometric Properties of the Italian Version of the Young Schema Questionnaire L-3: Preliminary Results (2018) — https://openalex.org/W2792734276",
+        "[crossref] Schema (2002) — https://doi.org/10.1007/978-3-642-56375-1_4",
+        "عنوان دقیق در سه مسیر یافت نشد؛ نزدیک‌ترین رکورد، مقالهٔ متفاوتی است (یالچین ۲۰۲۱)"
+      ],
+      "limitations": [
+        "semantic_scholar: HTTP_403 — کلید محیطی تنظیم نشده؛ از این پایگاه صرف‌نظر شد"
+      ],
+      "checked_at": "2026-09-15T05:04:42+00:00"
+    },
+    {
+      "original_citation": "Saggino, A., et al. (2018). The relationship between Early Maladaptive Schemas and Decision Making in uncertain environments. Personality and Individual Differences, 123, 1-6.",
+      "normalized_title": "relationship between early maladaptive schemas decision making uncertain environments",
+      "authors": [
+        "Saggino, A."
+      ],
+      "year": 2018,
+      "journal_or_publisher": "Personality and Individual Differences",
+      "doi": null,
+      "urls": [
+        "https://doi.org/10.3389/fpsyg.2018.00312"
+      ],
+      "databases_checked": [
+        "crossref",
+        "doaj",
+        "europepmc",
+        "openalex",
+        "pubmed",
+        "semantic_scholar"
+      ],
+      "metadata_matches": {
+        "url": "https://doi.org/10.3389/fpsyg.2018.00312",
+        "evidence_snippet": "ساگینو پژوهشگر واقعی حوزهٔ طرحواره است (نسخهٔ ایتالیایی YSQ‑L3، Frontiers in Psychology 2018) اما مقاله‌ای با عنوان «رابطهٔ طرحواره‌های ناسازگار اولیه و تصمیم‌گیری» در وب/نمایه‌ها یافت نشد",
+        "checked_at": "2026-09-15T10:40:00Z",
+        "tool": "web_search + OpenAlex (جلسه تعاملی)"
+      },
+      "relevance_level": "INDIRECT",
+      "relevance_reason": "سازهٔ مرتبط با تصمیم‌گیری/ریسک اما بدون زمینهٔ مالی",
+      "verification_status": "NOT_FOUND_AFTER_MULTISOURCE_SEARCH",
+      "evidence_notes": [
+        "[openalex] The relationship between neurocognition and social cognition with functional outcomes in schizophrenia: A meta-analysis (2010) — https://openalex.org/W2144535302",
+        "[openalex] Rethinking Rumination (2008) — https://openalex.org/W4211130665",
+        "[openalex] Medial and orbital frontal cortex in decision-making and flexible behavior (2022) — https://openalex.org/W4282829590",
+        "[openalex] Depression: A Decision-Theoretic Analysis (2015) — https://openalex.org/W2164531443",
+        "[openalex] Thinking, feeling and deciding: The influence of emotions on the decision making and performance of traders (2010) — https://openalex.org/W2028914474",
+        "[crossref] The Mediating Role of Early Maladaptive Schemas in the Relation between Co-Rumination and Depression in Young Adults (2015) — https://doi.org/10.1371/journal.pone.0140177",
+        "رکوردهای یافت‌شده شباهت کافی با استناد ندارند"
+      ],
+      "limitations": [
+        "semantic_scholar: HTTP_403 — کلید محیطی تنظیم نشده؛ از این پایگاه صرف‌نظر شد"
+      ],
+      "checked_at": "2026-09-15T05:05:08+00:00"
+    },
+    {
+      "original_citation": "Cantinotti, M., et al. (2021). The mediating role of early maladaptive schemas between adverse childhood experiences and gambling problems in adulthood. Journal of Gambling Studies, 37(2), 485-502.",
+      "normalized_title": "mediating role early maladaptive schemas between adverse childhood experiences gambling problems adulthood",
+      "authors": [
+        "Cantinotti, M."
+      ],
+      "year": 2021,
+      "journal_or_publisher": "Journal of Gambling Studies",
+      "doi": null,
+      "urls": null,
+      "databases_checked": [
+        "crossref",
+        "doaj",
+        "europepmc",
+        "openalex",
+        "pubmed",
+        "semantic_scholar"
+      ],
+      "metadata_matches": {
+        "url": "",
+        "evidence_snippet": "جست‌وجوی تعاملی: هیچ مقاله‌ای از هیچ نویسنده‌ای با نام خانوادگی کانتینوتی دربارهٔ طرحواره/قمار یافت نشد؛ ادبیات واقعیِ میانجی‌گری طرحواره‌ها در قمار با نویسندگان دیگر است",
+        "checked_at": "2026-09-15T10:50:00Z",
+        "tool": "web_search + OpenAlex author search (جلسه تعاملی)"
+      },
+      "relevance_level": "INDIRECT",
+      "relevance_reason": "فقط سازهٔ نظری مرتبط (بدون زمینهٔ مالی/تصمیم‌گیری)",
+      "verification_status": "NOT_FOUND_AFTER_MULTISOURCE_SEARCH",
+      "evidence_notes": [
+        "[openalex] Childhood and Adult Trauma Experiences of Incarcerated Persons and Their Relationship to Adult Behavioral Health Problem (2012) — https://openalex.org/W2011359496",
+        "[openalex] Childhood adversity as a transdiagnostic risk factor for affective disorders in adulthood: A systematic review focusing  (2018) — https://openalex.org/W2887101623",
+        "[openalex] Childhood trauma and adult interpersonal relationship problems in patients with depression and anxiety disorders (2014) — https://openalex.org/W2147854872",
+        "[openalex] Identifying the women at risk of antenatal anxiety and depression: A systematic review (2015) — https://openalex.org/W2217303271",
+        "[openalex] Experiences of severe childhood maltreatment, depression, anxiety and alcohol abuse among adults in Finland (2017) — https://openalex.org/W2612285146",
+        "[crossref] Links between casino proximity and gambling participation, expenditure, and pathology. (2008) — https://doi.org/10.1037/0893-164x.22.2.295",
+        "رکوردهای یافت‌شده شباهت کافی با استناد ندارند"
+      ],
+      "limitations": [
+        "semantic_scholar: HTTP_403 — کلید محیطی تنظیم نشده؛ از این پایگاه صرف‌نظر شد"
+      ],
+      "checked_at": "2026-09-15T05:05:29+00:00"
+    },
+    {
+      "original_citation": "امیدی، ع.، کدیور، پ.، و فرزاد، و. (۱۳۹۲). رابطه بین طرحواره‌های ناسازگار اولیه، سبک‌های فرزندپروری و سبک‌های هویت با گرایش به اعتیاد. اعتیاد پژوهی، ۷(۲۷)، ۹-۲۶.",
+      "normalized_title": "رابطه بین طرحواره ناسازگار اولیه سبک فرزندپروری سبک هویت گرایش اعتیاد",
+      "authors": [
+        "امیدی، ع.",
+        "کدیور، پ.",
+        "فرزاد، و."
+      ],
+      "year": 2013,
+      "journal_or_publisher": "اعتیاد پژوهی",
+      "doi": null,
+      "urls": null,
+      "databases_checked": [
+        "none"
+      ],
+      "metadata_matches": null,
+      "relevance_level": "INDIRECT",
+      "relevance_reason": "فقط سازهٔ نظری مرتبط (بدون زمینهٔ مالی/تصمیم‌گیری)",
+      "verification_status": "UNVERIFIED_ACCESS_LIMITATION",
+      "evidence_notes": [
+        "ثبت دقیق با همین عنوان/نویسندگان در نتایج وب دیده نشد؛ فقط پژوهش‌های هم‌موضوع یافت شد. پایگاه اصلی (احتمالاً نمایه‌شده در پایگاه‌های مسدود) نیازمند بررسی دستی است."
+      ],
+      "limitations": [
+        "بررسی کامل به دسترسی مستقیم یا بررسی دستی نیاز دارد"
+      ],
+      "checked_at": "2026-09-15T05:05:29+00:00"
+    },
+    {
+      "original_citation": "بشارت، محمدعلی؛ رستمی، رضا؛ پورنقاش، سید عباس؛ و گراوند، فریبرز. (۱۳۹۵). بررسی ساختار عاملی و ویژگی‌های روان‌سنجی پرسشنامه اضطراب حالت-صفت اسپیلبرگر در نمونه‌ای از دانشجویان. فصلنامه اندازه‌گیری تربیتی، ۷(۲۵)، ۷۷-۹۸.",
+      "normalized_title": "بررسی ساختار عاملی ویژگی روان سنجی پرسشنامه اضطراب حالت صفت اسپیلبرگر نمونه ای دانشجویان",
+      "authors": [
+        "بشارت، محمدعلی"
+      ],
+      "year": 2016,
+      "journal_or_publisher": "فصلنامه اندازه‌گیری تربیتی",
+      "doi": null,
+      "urls": null,
+      "databases_checked": [
+        "none"
+      ],
+      "metadata_matches": null,
+      "relevance_level": "INDIRECT",
+      "relevance_reason": "فقط سازهٔ نظری مرتبط (بدون زمینهٔ مالی/تصمیم‌گیری)",
+      "verification_status": "UNVERIFIED_ACCESS_LIMITATION",
+      "evidence_notes": [
+        "ثبت دقیق یافت نشد؛ جست‌وجو فقط مقالات مشابه روان‌سنجی را برگرداند. بررسی دستی در نمایهٔ مجله لازم است."
+      ],
+      "limitations": [
+        "بررسی کامل به دسترسی مستقیم یا بررسی دستی نیاز دارد"
+      ],
+      "checked_at": "2026-09-15T05:05:29+00:00"
+    },
+    {
+      "original_citation": "بهدیو، ع.، نمازی، م.، و خواجوی، ش. (۱۳۹۸). ارائه مدلی برای بررسی تأثیرات ترکیبی ریسک‌پذیری، ویژگی‌های فردی و فرهنگی بر بروز رفتار توده‌وار سرمایه‌گذاران در بورس اوراق بهادار تهران. پژوهش های حسابداری مالی و حسابرسی، ۱۱(۴۲)، ۱-۲۶.",
+      "normalized_title": "ارائه مدلی برای بررسی تأثیرات ترکیبی ریسک پذیری ویژگی فردی فرهنگی بروز رفتار توده وار سرمایه گذاران بورس اوراق بهادار تهران",
+      "authors": [
+        "بهدیو، ع."
+      ],
+      "year": 2019,
+      "journal_or_publisher": "پژوهش‌های حسابداری مالی و حسابرسی",
+      "doi": null,
+      "urls": null,
+      "databases_checked": [
+        "none"
+      ],
+      "metadata_matches": null,
+      "relevance_level": "BACKGROUND",
+      "relevance_reason": "زمینهٔ مالی بدون سازه‌های اصلی پژوهش",
+      "verification_status": "UNVERIFIED_ACCESS_LIMITATION",
+      "evidence_notes": [
+        "ثبت دقیق یافت نشد؛ چند پژوهش هم‌موضوعِ رفتار توده‌وار در بورس تهران دیده شد. بررسی دستی لازم است."
+      ],
+      "limitations": [
+        "بررسی کامل به دسترسی مستقیم یا بررسی دستی نیاز دارد"
+      ],
+      "checked_at": "2026-09-15T05:05:29+00:00"
+    },
+    {
+      "original_citation": "ستایش، م. ح.، کاظم‌پور، م.، و دلالی اصفهانی، ر. (۱۳۹۹). بررسی نقش منابع اطلاعاتی بر رابطه میان ویژگی‌های شخصیتی و رفتار معاملاتی سرمایه‌گذاران حقیقی در بورس اوراق بهادار تهران. مطالعات مدیریت مالی، ۸(۱۶)، ۲۹-۶۱.",
+      "normalized_title": "بررسی نقش منابع اطلاعاتی رابطه میان ویژگی شخصیتی رفتار معاملاتی سرمایه گذاران حقیقی بورس اوراق بهادار تهران",
+      "authors": [
+        "ستایش، م. ح."
+      ],
+      "year": 2020,
+      "journal_or_publisher": "مطالعات مدیریت مالی",
+      "doi": null,
+      "urls": null,
+      "databases_checked": [
+        "none"
+      ],
+      "metadata_matches": null,
+      "relevance_level": "BACKGROUND",
+      "relevance_reason": "زمینهٔ مالی بدون سازه‌های اصلی پژوهش",
+      "verification_status": "UNVERIFIED_ACCESS_LIMITATION",
+      "evidence_notes": [
+        "همکاریِ نام‌برده در پایگاه‌های عمومی تأیید می‌شود؛ ثبت دقیق مقاله نیازمند بررسی دستی در نمایهٔ مجله است."
+      ],
+      "limitations": [
+        "بررسی کامل به دسترسی مستقیم یا بررسی دستی نیاز دارد"
+      ],
+      "checked_at": "2026-09-15T05:05:29+00:00"
+    },
+    {
+      "original_citation": "طالبی، محمد؛ یحیی‌زاده‌فر، محمود؛ و سعیدی، پرویز. (۱۳۹۸). اعتباریابی مقیاس تحمل ریسک مالی گرابل و لایتون در بورس اوراق بهادار تهران. فصلنامه علمی-پژوهشی دانش سرمایه‌گذاری، ۸(۳۱)، ۱۵۱-۱۶۸.",
+      "normalized_title": "اعتباریابی مقیاس تحمل ریسک مالی گرابل لایتون بورس اوراق بهادار تهران",
+      "authors": [
+        "طالبی، محمد"
+      ],
+      "year": 2019,
+      "journal_or_publisher": "فصلنامه علمی-پژوهشی دانش سرمایه‌گذاری",
+      "doi": null,
+      "urls": null,
+      "databases_checked": [
+        "none"
+      ],
+      "metadata_matches": null,
+      "relevance_level": "BACKGROUND",
+      "relevance_reason": "زمینهٔ مالی بدون سازه‌های اصلی پژوهش",
+      "verification_status": "UNVERIFIED_ACCESS_LIMITATION",
+      "evidence_notes": [
+        "ثبت دقیق یافت نشد؛ سایت مجلهٔ دانش سرمایه‌گذاری (jik-ifea.ir) فهرست نویسندگان را دارد اما دسترسی به شماره‌ها نیازمند بررسی دستی است."
+      ],
+      "limitations": [
+        "بررسی کامل به دسترسی مستقیم یا بررسی دستی نیاز دارد"
+      ],
+      "checked_at": "2026-09-15T05:05:29+00:00"
+    },
+    {
+      "original_citation": "فلاح، م.، و خدایی، ا. (۱۳۹۸). رابطه هوش هیجانی و سبک های تصمیم گیری با عملکرد سرمایه گذاری در بورس اوراق بهادار تهران. فصلنامه علمی پژوهشی دانش مالی تحلیل اوراق بهادار، ۱۲(۴۲)، ۱-۱۶.",
+      "normalized_title": "رابطه هوش هیجانی سبک تصمیم گیری عملکرد سرمایه گذاری بورس اوراق بهادار تهران",
+      "authors": [
+        "فلاح، م."
+      ],
+      "year": 2019,
+      "journal_or_publisher": "دانش مالی تحلیل اوراق بهادار",
+      "doi": null,
+      "urls": null,
+      "databases_checked": [
+        "none"
+      ],
+      "metadata_matches": null,
+      "relevance_level": "BACKGROUND",
+      "relevance_reason": "مناسب برای تعریف/نظریهٔ پایه",
+      "verification_status": "UNVERIFIED_ACCESS_LIMITATION",
+      "evidence_notes": [
+        "ثبت دقیق یافت نشد؛ فقط همایش‌ها و پژوهش‌های هم‌موضوع دیده شد. بررسی دستی لازم است."
+      ],
+      "limitations": [
+        "بررسی کامل به دسترسی مستقیم یا بررسی دستی نیاز دارد"
+      ],
+      "checked_at": "2026-09-15T05:05:29+00:00"
+    },
+    {
+      "original_citation": "فروغی، د.، و تهرانی، ر. (۱۳۹۷). نقش سواد مالی در تعدیل رابطه بین سوگیری های رفتاری و عملکرد سرمایه گذاری در بورس اوراق بهادار تهران. تحقیقات مالی، ۲۰(۲)، ۱۸۹-۲۰۸.",
+      "normalized_title": "نقش سواد مالی تعدیل رابطه بین سوگیری رفتاری عملکرد سرمایه گذاری بورس اوراق بهادار تهران",
+      "authors": [
+        "فروغی، د."
+      ],
+      "year": 2018,
+      "journal_or_publisher": "تحقیقات مالی",
+      "doi": null,
+      "urls": null,
+      "databases_checked": [
+        "none"
+      ],
+      "metadata_matches": null,
+      "relevance_level": "BACKGROUND",
+      "relevance_reason": "زمینهٔ مالی بدون سازه‌های اصلی پژوهش",
+      "verification_status": "UNVERIFIED_ACCESS_LIMITATION",
+      "evidence_notes": [
+        "ثبت دقیق یافت نشد؛ مجلهٔ تحقیقات مالی (دانشگاه تهران) در دسترس مستقیم این محیط نیست. بررسی دستی لازم است."
+      ],
+      "limitations": [
+        "بررسی کامل به دسترسی مستقیم یا بررسی دستی نیاز دارد"
+      ],
+      "checked_at": "2026-09-15T05:05:29+00:00"
+    },
+    {
+      "original_citation": "نوری، ر.، و هاشمیان، ک. (۱۳۹۶). رابطه بین طرحواره های ناسازگار اولیه و اضطراب اجتماعی در دانشجویان. مطالعات روانشناختی، ۱۳(۲)، ۱۴۱-۱۵۸.",
+      "normalized_title": "رابطه بین طرحواره ناسازگار اولیه اضطراب اجتماعی دانشجویان",
+      "authors": [
+        "نوری، ر."
+      ],
+      "year": 2017,
+      "journal_or_publisher": "مطالعات روانشناختی",
+      "doi": null,
+      "urls": null,
+      "databases_checked": [
+        "none"
+      ],
+      "metadata_matches": null,
+      "relevance_level": "INDIRECT",
+      "relevance_reason": "فقط سازهٔ نظری مرتبط (بدون زمینهٔ مالی/تصمیم‌گیری)",
+      "verification_status": "UNVERIFIED_ACCESS_LIMITATION",
+      "evidence_notes": [
+        "ثبت دقیق با همین عنوان/مجله/سال یافت نشد؛ چند پژوهش هم‌موضوع با سال‌های دیگر دیده شد. بررسی دستی در نمایهٔ مجله لازم است."
+      ],
+      "limitations": [
+        "بررسی کامل به دسترسی مستقیم یا بررسی دستی نیاز دارد"
+      ],
+      "checked_at": "2026-09-15T05:05:29+00:00"
+    },
+    {
+      "original_citation": "یوسفی، ناصر. (۱۳۹۶). ویژگی‌های روان‌سنجی نسخه فارسی پرسشنامه طرحواره یانگ (فرم کوتاه) در نمونه غیربالینی. مجله روانشناسی بالینی، ۹(۲)، ۹۱-۱۰۲.",
+      "normalized_title": "ویژگی روان سنجی نسخه فارسی پرسشنامه طرحواره یانگ فرم کوتاه نمونه غیربالینی",
+      "authors": [
+        "یوسفی، ناصر"
+      ],
+      "year": 2017,
+      "journal_or_publisher": "مجله روانشناسی بالینی",
+      "doi": null,
+      "urls": null,
+      "databases_checked": [
+        "none"
+      ],
+      "metadata_matches": null,
+      "relevance_level": "INDIRECT",
+      "relevance_reason": "فقط سازهٔ نظری مرتبط (بدون زمینهٔ مالی/تصمیم‌گیری)",
+      "verification_status": "UNVERIFIED_ACCESS_LIMITATION",
+      "evidence_notes": [
+        "ثبت دقیق یافت نشد؛ مقالات مشابه دربارهٔ روان‌سنجی نسخه‌های دیگر پرسشنامه یانگ دیده شد. بررسی دستی لازم است."
+      ],
+      "limitations": [
+        "بررسی کامل به دسترسی مستقیم یا بررسی دستی نیاز دارد"
+      ],
+      "checked_at": "2026-09-15T05:05:29+00:00"
+    }
+  ]
+}
