@@ -1,0 +1,48 @@
+# پایپ‌لاین نگارش پایان‌نامه
+# این ورک‌فلو به‌صورت دستی (دکمهٔ Run) فعال می‌شود و مراحل زیر را اجرا می‌کند:
+# ۱) نصب پایتون ۳.۱۱ و وابستگی‌ها
+# ۲) اجرای عامل استاد (agents/professor.py)
+# ۳) آپلود خروجی پوشهٔ output/ به‌عنوان Artifact
+
+name: Thesis Pipeline
+
+on:
+  # فعال‌سازی دستی از تب Actions گیت‌هاب
+  workflow_dispatch:
+
+jobs:
+  run-thesis-agent:
+    runs-on: ubuntu-latest
+
+    steps:
+      # دریافت کد ریپازیتوری
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # نصب پایتون نسخهٔ ۳.۱۱
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # نصب وابستگی‌های پروژه
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install openai python-docx requests
+
+      # اجرای عامل استاد؛ کلیدها فقط از Secrets گیت‌هاب خوانده می‌شوند
+      - name: Run professor agent
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+        run: python agents/professor.py
+
+      # آپلود خروجی‌ها برای دانلود بعدی
+      - name: Upload output artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: thesis-output
+          path: output/
+          if-no-files-found: warn
