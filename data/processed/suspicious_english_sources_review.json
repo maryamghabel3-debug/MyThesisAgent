@@ -1,0 +1,156 @@
+{
+  "mission": "مأموریت ۹ — گام ۲: بررسی منابع مشکوک انگلیسی بدون پیش‌داوری",
+  "generated_at": "2026-09-16",
+  "status_vocabulary": [
+    "VERIFIED_EXACT",
+    "CORRECTABLE_METADATA",
+    "AUTHOR_REAL_ARTICLE_MISMATCH",
+    "SOURCE_TYPE_REQUIRES_MANUAL_CHECK",
+    "UNVERIFIED_AFTER_MULTISOURCE_SEARCH",
+    "FABRICATION_SUSPECTED"
+  ],
+  "method_notes": [
+    "هیچ منبعی صرفاً به‌دلیل نداشتن DOI یا نبود رکورد در Crossref ساختگی تلقی نشد.",
+    "برای هر منبع حداقل پنج مسیر مستقل جست‌وجو اجرا شد: عنوان دقیق، نویسنده+سال+کلیدواژه، عنوان+مجله، نمایه‌های کتاب‌شناختی (OpenAlex، Crossref، Europe PMC، PubMed) و جست‌وجوی وب.",
+    "هیچ رکورد نزدیکی به‌عنوان همان منبع معرفی نشد؛ رکوردهای نزدیک فقط شواهد هستند.",
+    "هیچ منبعی حذف، جایگزین یا اصلاح نشد؛ تصمیم نهایی منحصراً با کاربر است."
+  ],
+  "results": [
+    {
+      "id": "EN-01",
+      "original_citation": "Schmidt, N. B., et al. (2016). The Young Schema Questionnaire: A Rasch analysis. European Journal of Psychological Assessment, 32(4), 314-323.",
+      "found_in_project_files": [
+        "data/processed/proposal_text.md",
+        "data/processed/proposal_extended_text.md",
+        "ارجاع درون‌متنی «اشمیت و همکاران، ۲۰۱۶» در فصل دوم"
+      ],
+      "search_queries": [
+        "OpenAlex works search: \"The Young Schema Questionnaire: A Rasch analysis\"",
+        "OpenAlex author profile: Norman B. Schmidt (A5064702305) + search=schema",
+        "Crossref works query.title: The Young Schema Questionnaire Rasch analysis",
+        "Europe PMC search: \"Young Schema Questionnaire\" Rasch",
+        "PubMed esearch: Young Schema Questionnaire Rasch analysis",
+        "web_search: \"The Young Schema Questionnaire\" \"Rasch analysis\" Schmidt 2016 European Journal of Psychological Assessment",
+        "fetch_page: https://doi.org/10.1080/00050067.2021.1979885 (برای تأیید رکورد نزدیک)"
+      ],
+      "databases_checked": ["openalex", "crossref", "europepmc", "pubmed", "web_search", "fetch_page"],
+      "exact_match_found": false,
+      "closest_candidate": {
+        "citation": "Yalcin, O., Marais, I., Lee, C. W., & Correia, H. (2021). Revisions to the Young Schema Questionnaire using Rasch analysis: the YSQ-R. Australian Psychologist, 57(1).",
+        "doi": "10.1080/00050067.2021.1979885",
+        "url": "https://doi.org/10.1080/00050067.2021.1979885",
+        "note": "نویسندهٔ اول، سال و مجله متفاوت است؛ استفاده از آن «جایگزینی منبع» است نه «اصلاح متادیتا»."
+      },
+      "metadata_difference": "ترکیب نویسنده (Schmidt)+سال (2016)+مجله (EJPA)+روش (Rasch) با هیچ رکورد موجودی همخوانی ندارد. اشمیت یک پژوهشگر واقعی و برجسته (۶۵۹ اثر در OpenAlex) است و آثار مرتبط با طرحواره دارد (1995، 2003) اما هیچ اثر ۲۰۱۶ دربارهٔ تحلیل راشِ پرسش‌نامهٔ یانگ ندارد.",
+      "source_type": "journal_article",
+      "relevance_assessment": "در پروژه به‌عنوان پشتوانهٔ بین‌المللی روان‌سنجی فرم کوتاه پرسش‌نامهٔ طرحوارهٔ یانگ (YSQ-SF) استفاده شده است؛ در صورت تأیید جایگزینی، مقالهٔ یالچین و همکاران (۲۰۲۱) نزدیک‌ترین شواهد واقعی برای تحلیل راشِ YSQ است.",
+      "status": "AUTHOR_REAL_ARTICLE_MISMATCH",
+      "evidence_urls": [
+        "https://openalex.org/A5064702305",
+        "https://doi.org/10.1080/00050067.2021.1979885",
+        "https://doi.org/10.1007/BF02230402"
+      ],
+      "evidence_notes": "پنج مسیر مستقل (عنوان در OpenAlex، عنوان در Crossref، فهرست کامل آثار نویسنده، Europe PMC، جست‌وجوی وب) هیچ‌کدام رکوردی با این مشخصات نداشتند. تنها مقالهٔ تحلیل راشِ شناخته‌شدهٔ YSQ متعلق به یالچین و همکاران ۲۰۲۱ است. عدم وجود رکورد در یک پایگاه به‌تنهایی مبنای حکم قرار نگرفت.",
+      "confidence": {
+        "no_exact_record_exists": "high",
+        "author_is_real": "high",
+        "intended_original_reference": "medium"
+      },
+      "manual_review_needed": true,
+      "proposed_action": "حفظ استناد فعلی بدون تغییر در این مرحله؛ گزینهٔ مستند برای تصمیم کاربر: جایگزینی با رکورد واقعی یالچین و همکاران (2021) یا حذف ارجاع درون‌متنی؛ تصمیم نهایی با کاربر."
+    },
+    {
+      "id": "EN-02",
+      "original_citation": "Saggino, A., et al. (2018). The relationship between Early Maladaptive Schemas and Decision Making in uncertain environments. Personality and Individual Differences, 123, 1–6.",
+      "found_in_project_files": [
+        "data/processed/proposal_text.md",
+        "data/processed/proposal_extended_text.md"
+      ],
+      "search_queries": [
+        "OpenAlex works search: \"The relationship between Early Maladaptive Schemas and Decision Making\"",
+        "OpenAlex author profile: Aristide Saggino (A5107908258), works 2016-2020 (full list)",
+        "OpenAlex filter: author A5107908258 + source Personality and Individual Differences",
+        "Crossref works query.title: The relationship between Early Maladaptive Schemas and Decision Making",
+        "OpenAlex topic search: early maladaptive schemas decision making",
+        "Europe PMC search: \"Early Maladaptive Schemas\" \"Decision Making\"",
+        "web_search: Saggino 2018 \"early maladaptive schemas\" \"decision making\" \"uncertain environments\" Personality and Individual Differences"
+      ],
+      "databases_checked": ["openalex", "crossref", "europepmc", "web_search"],
+      "exact_match_found": false,
+      "closest_candidate": {
+        "citation": "Saggino, A., Balsamo, M., Carlucci, L., Cavalletti, V., et al. (2018). Psychometric Properties of the Italian Version of the Young Schema Questionnaire L-3: Preliminary Results. Frontiers in Psychology, 9, 312.",
+        "doi": "10.3389/fpsyg.2018.00312",
+        "url": "https://doi.org/10.3389/fpsyg.2018.00312",
+        "note": "مقالهٔ واقعیِ همین نویسنده در همین سال، اما موضوع متفاوت (روان‌سنجی فرم بلند ایتالیایی، نه تصمیم‌گیری) و مجله متفاوت؛ مقالهٔ دوم واقعیِ ۲۰۱۸: Carlucci et al. (2018) در Psychology Research and Behavior Management، DOI: 10.2147/PRBM.S144907."
+      },
+      "metadata_difference": "ساژینو نویسنده‌ای واقعی با ۹۶ اثر نمایه‌شده است و در ۲۰۱۸ چند مقالهٔ واقعی دارد، اما هیچ مقاله‌ای با موضوع تصمیم‌گیری ندارد و مقالات او در مجلهٔ PAID مربوط به سال‌های ۱۹۹۵، ۱۹۹۶، ۲۰۰۱ و ۲۰۱۴ با موضوعات دیگر هستند. مقالهٔ ادعاشده در هیچ پایگاهی یافت نشد.",
+      "source_type": "journal_article",
+      "relevance_assessment": "در پروژه برای پیوند طرحواره‌های ناسازگار اولیه با تصمیم‌گیری در شرایط عدم قطعیت (مرتبط با رفتارهای مالی پرخطر) استفاده شده است؛ موضوع از نظر پژوهشی مرتبط است اما خود رکورد وجود ندارد.",
+      "status": "AUTHOR_REAL_ARTICLE_MISMATCH",
+      "evidence_urls": [
+        "https://openalex.org/A5107908258",
+        "https://doi.org/10.3389/fpsyg.2018.00312",
+        "https://doi.org/10.2147/PRBM.S144907"
+      ],
+      "evidence_notes": "فهرست کامل آثار ۲۰۱۶-۲۰۲۰ نویسنده در OpenAlex مرور شد؛ هیچ رکوردی با عنوان/موضوع ادعاشده وجود ندارد. جست‌وجوی وب تنها یک مقالهٔ نظری ۲۰۲۰ با عنوان شبیه (بدون ارتباط با ساژینو) یافت که رکورد دیگری است و به‌عنوان همان منبع معرفی نشد.",
+      "confidence": {
+        "no_exact_record_exists": "high",
+        "author_is_real": "high",
+        "intended_original_reference": "low"
+      },
+      "manual_review_needed": true,
+      "proposed_action": "حفظ استناد فعلی بدون تغییر در این مرحله؛ اصلاح صرف متادیتا ممکن نیست (رکورد نزدیک، مقالهٔ متفاوتی است)؛ تصمیم نهایی با کاربر."
+    },
+    {
+      "id": "EN-03",
+      "original_citation": "Cantinotti, M., et al. (2021). The mediating role of early maladaptive schemas between adverse childhood experiences and gambling problems in adulthood. Journal of Gambling Studies, 37(2), 485-502.",
+      "found_in_project_files": [
+        "data/processed/proposal_text.md",
+        "data/processed/proposal_extended_text.md"
+      ],
+      "search_queries": [
+        "OpenAlex works search: \"The mediating role of early maladaptive schemas between adverse childhood experiences and gambling problems in adulthood\"",
+        "OpenAlex author profiles: Michael Cantinotti (A5067064833, 62 works) و بررسی کلیدواژه‌های gambl/schema/childhood/mediat در همهٔ آثار",
+        "Crossref: Journal of Gambling Studies, دورهٔ ۳۷ (۲۰۲۱)، بررسی شمارهٔ 37(2) و صفحات اطراف ۴۸۵-۵۰۲",
+        "OpenAlex topic search: early maladaptive schemas adverse childhood experiences gambling",
+        "Europe PMC search: maladaptive schemas gambling childhood",
+        "web_search: Cantinotti \"early maladaptive schemas\" gambling \"adverse childhood experiences\" Journal of Gambling Studies 2021"
+      ],
+      "databases_checked": ["openalex", "crossref", "europepmc", "web_search"],
+      "exact_match_found": false,
+      "closest_candidate": {
+        "citation": "Horak, M., Eagle, C., et al. (2021). Gambling Disorder and Childhood Trauma: A Complex Association. Journal of Gambling Studies, 37(2), 515-528.",
+        "doi": "10.1007/s10899-020-09983-w",
+        "url": "https://doi.org/10.1007/s10899-020-09983-w",
+        "note": "نزدیک‌ترین مقالهٔ واقعی در همان مجله، دوره، شماره و سال (موضوع ترومای کودکی و قمار)؛ نویسندگان، عنوان، صفحات و مؤلفهٔ طرحواره‌ای متفاوت است — همان منبع نیست."
+      },
+      "metadata_difference": "مایکل کانتینوتی پژوهشگر واقعی حوزهٔ قمار است (۶۲ اثر؛ عمدتاً با گروه لادوسور، ۲۰۰۵-۲۰۱۹؛ دانشگاه کبک در تروا-ریویر) اما هیچ مقاله‌ای دربارهٔ طرحواره‌های ناسازگار اولیه ندارد. مجله و شمارهٔ ادعاشده (JGS 37(2), 2021) وجود دارد اما مقاله‌ای در صفحات ۴۸۵-۵۰۲ با عنوان ادعاشده در جدول محتوای آن نیست.",
+      "source_type": "journal_article",
+      "relevance_assessment": "در پروژه برای پیوند تجارب نامطلوب کودکی، طرحواره‌ها و رفتارهای پرخطر (قمار/مالی) استفاده شده است؛ موضوع مرتبط است اما خود رکورد وجود ندارد.",
+      "status": "AUTHOR_REAL_ARTICLE_MISMATCH",
+      "evidence_urls": [
+        "https://openalex.org/A5067064833",
+        "https://doi.org/10.1007/s10899-020-09983-w"
+      ],
+      "evidence_notes": "چهار مسیر مستقل (عنوان دقیق، فهرست کامل آثار نویسنده، جدول محتوای مجله در سال ادعاشده، جست‌وجوی موضوعی و وب) همگی منفی بودند. چون نویسنده و مجله هر دو واقعی‌اند، وضعیت «ساختگی» منتسب نشد.",
+      "confidence": {
+        "no_exact_record_exists": "high",
+        "author_is_real": "high",
+        "intended_original_reference": "low"
+      },
+      "manual_review_needed": true,
+      "proposed_action": "حفظ استناد فعلی بدون تغییر در این مرحله؛ تصمیم نهایی با کاربر."
+    }
+  ],
+  "summary": {
+    "total_suspicious_english_sources": 3,
+    "VERIFIED_EXACT": 0,
+    "CORRECTABLE_METADATA": 0,
+    "AUTHOR_REAL_ARTICLE_MISMATCH": 3,
+    "SOURCE_TYPE_REQUIRES_MANUAL_CHECK": 0,
+    "UNVERIFIED_AFTER_MULTISOURCE_SEARCH": 0,
+    "FABRICATION_SUSPECTED": 0,
+    "sources_modified_or_deleted": 0,
+    "pending_user_decision": 3
+  }
+}
