@@ -86,6 +86,36 @@ python agents/professor.py
 از تب **Actions** در ریپازیتوری، ورک‌فلوی **Thesis Pipeline** را انتخاب و با دکمهٔ
 **Run workflow** اجرا کنید. خروجی پوشهٔ `output/` به‌صورت Artifact ذخیره می‌شود.
 
+## 🔎 The Researcher — راستی‌آزمایی چندمنبعی منابع
+
+ماژول `agents/research_tools.py` به‌همراه خط فرمان `agents/researcher_cli.py`
+برای «یافتن، راستی‌آزمایی و ثبت شواهد» منابع علمی بدون اتکا به حافظهٔ مدل ساخته شده است.
+
+- **خط لولهٔ خودکار (انگلیسی):** اولویت با OpenAlex سپس Crossref؛ برای موضوعات
+  روان‌شناسی سلامت/زیستی، Europe PMC و PubMed؛ سپس DOAJ. Semantic Scholar فقط با
+  کلید محیطی `SEMANTIC_SCHOLAR_API_KEY` (بدون کلید، شفاف رد می‌شود).
+- **منابع فارسی:** با اسکریپت خودکار تأیید نمی‌شوند؛ مسیر بررسی، پروتکل تعاملی
+  است: `docs/interactive_research_protocol.md`.
+- **محدودیت مهم:** ابزارهای داخلی ایجنت (`web_search` / `fetch_page`) فقط در
+  جلسهٔ تعاملی در دسترس‌اند و از پایتون فراخوانی نمی‌شوند؛ دسترسی آن‌ها در
+  GitHub Actions تست/تأیید **نشده** و نباید فرض شود.
+
+```bash
+# اجرا نمونه (سه منبع آزمون)
+python -m agents.researcher_cli \
+  --input tests/fixtures/three_refs.json \
+  --output data/processed/research_verification_v2.json \
+  --report data/processed/research_verification_v2.md
+
+# تست‌ها
+python -m unittest discover -s tests
+```
+
+وضعیت‌های خروجی: `VERIFIED`، `VERIFIED_WITH_LIMITATION`، `METADATA_MISMATCH`،
+`RELEVANCE_UNCLEAR`، `UNVERIFIED_ACCESS_LIMITATION`،
+`NOT_FOUND_AFTER_MULTISOURCE_SEARCH`، `FABRICATION_SUSPECTED`.
+نداشتن DOI به‌تنهایی هرگز به معنای جعلی بودن منبع نیست.
+
 ## ⚠️ هشدارهای آکادمیک
 
 - 🎯 این ابزار صرفاً برای **کمک، ایده‌پردازی و تسهیل فرآیند** است؛ مسئولیت علمی و حقوقی نهایی محتوای پایان‌نامه با **دانشجو** است.
