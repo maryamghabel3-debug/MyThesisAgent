@@ -355,7 +355,6 @@ Thaler, R. H. (2016). Behavioral finance: Past, present, and future. American E
 Vasile, C. (2014). Maladaptive schemas and logical errors in decision making. Procedia-Social and Behavioral Sciences, 127, 466–470
 Yalom, I. D. (1980). Existential Psychotherapy. Basic Books
 Young, J. E. (1998). Young Schema Questionnaire - Short Form. Schema Therapy Institute.
-Young, J. E., Klosko, J. S., & Weishaar, M. E. (2003). Schema therapy: A practitioner's guide. Guilford Press
 Young, J. E. (2005). Young Schema Questionnaire - Short Form 3 (YSQ-S3). Schema Therapy Institute.
 Young, J. E., Klosko, J. S., & Weishaar, M. E. (2003). Schema Therapy: A Practitioner's Guide. Guilford Press.
 Zuckerman, M. (1999). Vulnerability to psychopathology: A biosocial model. American Psychological Association.
