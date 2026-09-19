@@ -1,0 +1,129 @@
+{
+  "mission": "مأموریت ۱۰ — ثبت حکم نهایی ۳ استناد انگلیسی و طرح جایگزینی مبتنی بر ادعا",
+  "generated_at": "2026-09-19",
+  "rules": [
+    "هیچ جمله‌ای بازنویسی یا حذف نشد؛ هیچ منبعی از هیچ فایلی حذف نشد.",
+    "فقط رکوردهای حل‌شده از Crossref / OpenAlex / Europe PMC یا بازدید مستقیم کاربر به‌عنوان جایگزین معرفی شدند؛ هیچ‌چیز از حافظه ثبت نشد."
+  ],
+  "final_verdicts": {
+    "Schmidt_2016_EJPA": "CITATION_DOES_NOT_EXIST_AS_CITED",
+    "Saggino_2018_PAID": "CITATION_DOES_NOT_EXIST_AS_CITED",
+    "Cantinotti_2021_JGS": "CITATION_DOES_NOT_EXIST_AS_CITED"
+  },
+  "citation_instances": [
+    {
+      "id": "INST-01",
+      "source_label": "اشمیت و همکاران (۲۰۱۶)",
+      "file": "data/processed/proposal_extended_text.md",
+      "approximate_position": 92681,
+      "location_hint": "ابزارهای اندازه‌گیری → بند ۲: پرسش‌نامهٔ طرحوارهٔ یانگ - فرم کوتاه (YSQ-SF)",
+      "sentence": "ویژگی‌های روان‌سنجی این ابزار در سطح بین‌المللی تأیید شده است (اشمیت و همکاران، ۲۰۱۶).",
+      "claim": "روان‌سنجی پرسش‌نامهٔ یانگ / پشتوانهٔ بین‌المللی فرم کوتاه ۷۵ سؤالی",
+      "claim_category": "روان‌سنجی پرسش‌نامهٔ یانگ",
+      "ruling": "A",
+      "ruling_label": "جایگزین مستقیم دارد (از رکوردهای حل‌شدهٔ گام‌های ۱ تا ۳)",
+      "resolved_replacements": [
+        {
+          "citation": "Saggino, A., Balsamo, M., Carlucci, L., Cavalletti, V., Sergi, M. R., da Fermo, G., Dèttore, D., Marsigli, N., & Tommasi, M. (2018). Psychometric properties of the Italian version of the Young Schema Questionnaire L-3: Preliminary results. Frontiers in Psychology, 9, 312.",
+          "doi": "10.3389/fpsyg.2018.00312",
+          "verified_by": "بازدید صفحهٔ رسمی توسط کاربر + حل شناسه از Crossref",
+          "caveat": "دربارهٔ فرم بلند (L-3) است، نه فرم کوتاه ۷۵ سؤالی"
+        },
+        {
+          "citation": "Yalcin, O., Marais, I., Lee, C., & Correia, H. (2021). Revisions to the Young Schema Questionnaire using Rasch analysis: the YSQ-R. Australian Psychologist, 57(1), 8-20.",
+          "doi": "10.1080/00050067.2021.1979885",
+          "verified_by": "حل شناسه از Crossref (باز-تأیید در این مرحله)",
+          "caveat": "تحلیل راشِ فرم بلند/بازنگری (YSQ-R)؛ روان‌سنجی مستقیم فرم کوتاه نیست"
+        },
+        {
+          "citation": "Schmidt, N. B., Joiner, T. E., Young, J. E., & Telch, M. J. (1995). The schema questionnaire: Investigation of psychometric properties and the hierarchical structure of a measure of maladaptive schemas. Cognitive Therapy and Research, 19(3), 295-321.",
+          "doi": "10.1007/bf02230402",
+          "verified_by": "حل شناسه از Crossref + جست‌وجوی مستقل در OpenAlex",
+          "caveat": "مربوط به نسخهٔ اصلی پرسش‌نامهٔ طرحواره (پیش از فرم کوتاه) است"
+        }
+      ],
+      "accuracy_note": "هیچ جایگزینی مستقیماً روان‌سنجی فرم کوتاه ۷۵ سؤالی نیست؛ استفاده نیازمند تطبیق جمله است که فقط با تصمیم کاربر انجام می‌شود.",
+      "text_modified": false
+    },
+    {
+      "id": "INST-02",
+      "source_label": "ساژینو و همکاران (۲۰۱۸) — در متن با املای «ساگینو»",
+      "file": "data/processed/proposal_extended_text.md",
+      "approximate_position": 62932,
+      "location_hint": "مبانی نظری اضطراب صفتی → دیدگاه شناختی → خطاهای شناختی",
+      "sentence": "این الگوهای فکری معیوب، فرد را در یک چرخه دائمی از نگرانی و پیش‌بینی تهدید گرفتار می‌کنند (ساگینو و همکاران، ۲۰۱۸).",
+      "claim": "نقش الگوهای شناختی معیوب در تداوم چرخهٔ نگرانی و پیش‌بینی تهدید (در زمینهٔ استناد اصلی: طرحواره و تصمیم‌گیری در شرایط عدم قطعیت)",
+      "claim_category": "طرحواره و تصمیم‌گیری",
+      "ruling": "B",
+      "ruling_label": "جست‌وجوی واقعی انجام شد؛ رکورد حل‌شده‌ای با چکیدهٔ مرتبط یافت نشد",
+      "searches_performed": [
+        "OpenAlex: «early maladaptive schemas» + «decision making» (۱۲ نتیجهٔ برتر با شناسه؛ هیچ‌کدام با ادعای جمله مرتبط نبود)",
+        "Crossref: «early maladaptive schemas decision making» و «early maladaptive schemas cognitive distortions anxiety»"
+      ],
+      "resolved_replacements": [],
+      "near_miss_observation": {
+        "citation": "Rocha, S., Cid Fernández, X. M., & Rodríguez Castro, Y. (2023). Exploring the associations between early maladaptive schemas and impulsive and compulsive buying tendencies. Frontiers in Psychiatry, 14, 1157710.",
+        "doi": "10.3389/fpsyt.2023.1157710",
+        "note": "رکورد حل‌شده اما نامرتبط با ادعای این جمله؛ به‌عنوان جایگزین معرفی نشد."
+      },
+      "user_decision_needed": true,
+      "decision_prompt": "[جمله نیاز به تصمیم کاربر: حذف ادعا یا نگارش مجدد با منبع دیگر]",
+      "text_modified": false
+    },
+    {
+      "id": "INST-03",
+      "source_label": "کانتینوتی و همکاران (۲۰۲۱)",
+      "file": "data/processed/proposal_extended_text.md",
+      "approximate_position": 75720,
+      "location_hint": "پیشینهٔ پژوهشی خارجی (پس از چارلز و کاسیلینگام)",
+      "sentence": "کانتینوتی و همکاران (۲۰۲۱)، در یک مطالعه کلیدی، نقش میانجی طرحواره‌های ناسازگار اولیه را در رابطه بین تجارب نامطلوب کودکی و مشکلات قمار در بزرگسالی آزمون کردند. […] در مقابل، یک مسیر غیرمستقیم قوی و معنادار یافت شد: تجارب نامطلوب کودکی، منجر به شکل‌گیری طرحواره‌هایی مانند «بی‌اعتمادی/بدرفتاری» و «نقص/شرم» شده و سپس این طرحواره‌ها هستند که مشکلات قمار را پیش‌بینی می‌کنند. این مطالعه، از نظر ساختاری، قوی‌ترین شاهد تجربی برای مدل مفهومی پژوهش حاضر است…",
+      "claim": "نقش میانجی طرحواره‌های ناسازگار اولیه بین تجارب نامطلوب کودکی و مشکلات قمار در بزرگسالی (آزموده با مدل‌سازی معادلات ساختاری)",
+      "claim_category": "طرحواره و قمار-بدرفتاری",
+      "ruling": "C",
+      "ruling_label": "جست‌وجوی واقعی انجام شد؛ رکوردهای واقعیِ حل‌شده با موضوع مرتبط یافت شد",
+      "searches_performed": [
+        "Crossref: «early maladaptive schemas gambling» (۱۵ نتیجه)",
+        "Europe PMC: دریافت چکیدهٔ سه رکورد کاندیدا"
+      ],
+      "resolved_replacements": [
+        {
+          "citation": "Estévez, A., Momeñe López, J., Macía, L., Jáuregui, P., Aonso-Diego, G., et al. (2025). Association between emotional dependence, traumatic life events, and early maladaptive schemas in women with gambling disorder. Adicciones.",
+          "doi": "10.20882/adicciones.2034",
+          "verified_by": "حل شناسه از Crossref + چکیده از Europe PMC",
+          "caveat": "نمونه محدود به زنان مبتلا به اختلال قمار؛ متغیرها شامل تجارب آسیب‌زا، طرحواره‌ها و وابستگی هیجانی است"
+        },
+        {
+          "citation": "Estévez, A., Jauregui, P., Momeñe, J., & Macía, L. (2024). Association between gambling motives, violence and early maladaptive schemas in women with gambling disorder. Journal of Gambling Studies.",
+          "doi": "10.1007/s10899-024-10285-8",
+          "verified_by": "حل شناسه از Crossref + چکیده از Europe PMC",
+          "caveat": "میانجی‌گری در مسیر خشونت ← طرحواره‌ها/انگیزه‌های قمار؛ نه دقیقاً تجارب کودکی ← طرحواره ← مشکلات قمار"
+        },
+        {
+          "citation": "Shorey, R. C., Anderson, S., & Stuart, G. L. (2012). Gambling and early maladaptive schemas in a treatment seeking sample of male alcohol users: A preliminary investigation. Addictive Disorders & Their Treatment.",
+          "doi": "10.1097/adt.0b013e31823eda8f",
+          "verified_by": "حل شناسه از Crossref + چکیده از Europe PMC",
+          "caveat": "رابطهٔ قمار و طرحواره‌ها در مردان وابسته به الکل؛ بدون مؤلفهٔ تجارب کودکی/میانجی‌گری"
+        }
+      ],
+      "accuracy_note": "هیچ‌کدام عیناً یافتهٔ ادعاشده را بازتولید نمی‌کنند؛ استفاده نیازمند نگارش مجدد ادعا با تصمیم کاربر است.",
+      "text_modified": false
+    }
+  ],
+  "reference_list_entries_documented": [
+    {"file": "data/processed/proposal_extended_text.md", "entry": "Cantinotti, M., et al. (2021)… JGS 37(2), 485-502", "action": "مستند شد؛ حذف نشد"},
+    {"file": "data/processed/proposal_extended_text.md", "entry": "Saggino, A., et al. (2018)… PAID 123, 1-6", "action": "مستند شد؛ حذف نشد"},
+    {"file": "data/processed/proposal_extended_text.md", "entry": "Schmidt, N. B., et al. (2016)… EJPA 32(4), 314-323", "action": "مستند شد؛ حذف نشد"},
+    {"file": "data/processed/proposal_text.md", "entry": "ثبت‌های اشمیت و کانتینوتی در فهرست منابع", "action": "مستند شد؛ حذف نشد"}
+  ],
+  "excluded_from_scope": [
+    {"text": "مانر و اشمیت (۲۰۰۶) — دو ارجاع درون‌متنی + ثبت فهرست منابع", "reason": "مقالهٔ متفاوت و واقعی (Maner & Schmidt, 2006, Behavior Therapy)؛ جزو منابع مشکوک نیست"}
+  ],
+  "summary": {
+    "instances_in_chapter2_text": 3,
+    "ruling_A": 1,
+    "ruling_B": 1,
+    "ruling_C": 1,
+    "user_decisions_pending": 3,
+    "text_or_sources_modified": 0
+  }
+}
