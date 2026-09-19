@@ -243,5 +243,5 @@ Investigating the Mediating Role of Early Maladaptive Schemas in the Relationshi
 
 ## ۱۳. کلمات کلیدی
 
-- **فارسی:** اضطراب صفتی / طرحواره‌های ناسازگار اولیه / رفتارهای مالی پرخطر / تحمل ریسک مالی / تصمیم‌گیری مالی / معامله‌گران بازارهای مالی
-- **انگلیسی:** Trait Anxiety / Early Maladaptive Schemas / Risky Financial Behaviors / Financial Risk Tolerance / Financial Decision-Making / Financial Market Traders
+- **فارسی:** اضطراب صفتی / طرحواره‌های ناسازگار اولیه / رفتارهای مالی پرخطر / معامله‌گران بازارهای مالی / مدل‌سازی معادلات ساختاری
+- **انگلیسی:** Trait Anxiety / Early Maladaptive Schemas / High-Risk Financial Behaviors / Financial Market Traders / Structural Equation Modeling
