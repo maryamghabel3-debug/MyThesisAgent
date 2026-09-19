@@ -271,7 +271,7 @@ Trait Anxiety / Early Maladaptive Schemas / Risky Financial Behaviors / Financia
 آزمون فرضیات فرعی: برای بررسی روابط دوجانبه بین متغیرها فرضیات H2, H3, H4، از آزمون ضریب همبستگی پیرسون در نرم‌افزار spss استفاده می‌شود.
 آزمون فرضیه اصلی: برای آزمون نقش میانجی‌گری طرحواره‌های ناسازگار اولیه فرضیه H1، یکی از دو روش زیر به کار گرفته خواهد شد:
 (روش اصلی) مدل‌سازی معادلات ساختاری: در صورت رسیدن به حجم نمونه کافی (حدود ۲۰۰ نفر)، از این روش در نرم‌افزار Amos برای آزمون کل مدل و بررسی شاخص‌های برازش مدل مانند χ²/df, CFI, RMSEA استفاده می‌شود.
-(روش جایگزین) تحلیل مسیر با ماکروی پراسس: در صورتی که حجم نمونه کمتر باشد، از مدل شماره ۴ در ماکروی پراسس برای spss استفاده خواهد شد. این روش، اثرات مستقیم و غیرمستقیم را محاسبه کرده و معناداری اثر میانجی را با استفاده از روش بوت‌استرپ با دقت بالا آزمون می‌کند (هیز، ۲۰۱۷).
+(روش جایگزین) تحلیل مسیر با ماکروی پراسس: در صورتی که حجم نمونه کمتر باشد، از مدل شماره ۴ در ماکروی پراسس برای spss استفاده خواهد شد. این روش، اثرات مستقیم و غیرمستقیم را محاسبه کرده و معناداری اثر میانجی را با استفاده از روش بوت‌استرپ با دقت بالا آزمون می‌کند (هیز، ۲۰۱۸).
 ز) منابع ومآخذ:
 الف) منابع فارسی
 امیدی، ع.، کدیور، پ.، و فرزاد، و. (۱۳۹۲). رابطه بین طرحواره‌های ناسازگار اولیه، سبک‌های فرزندپروری و سبک‌های هویت با گرایش به اعتیاد. اعتیاد پژوهی، ۷(۲۷)، ۹-۲۶.
@@ -315,7 +315,7 @@ Grall-Bronnec, M., et al. (2025). Development and validation of the Trading Diso
 Grupe, D. W., & Nitschke, J. B. (2013). Uncertainty and anticipation in anxiety: an integrated neurobiological and psychological perspective. Nature Reviews Neuroscience, 14(7), 488-501.
 Halvorsen, M., et al. (2009). The relationship between personality disorders and early maladaptive schemas: a study of adult psychiatric outpatients. Journal of Personality Disorders, 23(4), 415-420.
 Hartley, C. A., & Phelps, E. A. (2012). Anxiety and decision-making. Biological Psychiatry, 72 (2), 113–118
-Hayes, A. F. (2017). Introduction to mediation, moderation, and conditional process analysis: A regression-based approach (2nd ed.). Guilford Press.
+Hayes, A. F. (2018). Introduction to mediation, moderation, and conditional process analysis: A regression-based approach (2nd ed.). Guilford Press.
 Hwang, S., & Salmon, M. (2004). Market stress and herding. Journal of Empirical Finance, 11(4), 585-616.
 Julian, L. J. (2011). Measures of anxiety: State-Trait Anxiety Inventory (STAI), Beck Anxiety Inventory (BAI), and Hospital Anxiety and Depression Scale-Anxiety (HADS-A). Arthritis Care & Research, 63(S11), S467-S472.
 Kahneman, D. (2011). Thinking, fast and slow. Farrar, Straus and Giroux.
