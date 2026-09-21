@@ -40,10 +40,17 @@ LINE_SPACING_PT = 29       # فاصلهٔ خطوط: Exactly 29pt
 
 ROOT = Path(__file__).resolve().parents[1]
 CH_SOURCES = [
-    ('فصل اول', 'کلیات پژوهش', ROOT / 'output/drafts/chapter1.md'),
-    ('فصل دوم', 'مبانی نظری و پیشینه پژوهش', ROOT / 'output/drafts/chapter2_full.md'),
-    ('فصل سوم', 'روش‌شناسی پژوهش (بخش اول)', ROOT / 'output/drafts/chapter3_full.md'),
+    ('فصل اول', ROOT / 'output/drafts/chapter1.md'),
+    ('فصل دوم', ROOT / 'output/drafts/chapter2_full.md'),
+    ('فصل سوم', ROOT / 'output/drafts/chapter3_full.md'),
 ]
+
+def chapter_title_from_h1(text):
+    """عنوان رسمی فصل را از سرفصل `#` فایل مارک‌داون می‌گیرد (بعد از «:»)."""
+    for line in text.splitlines():
+        if line.startswith('# ') and ':' in line:
+            return line.split(':', 1)[1].strip()
+    return ''
 OUT_PATH = ROOT / 'output/final/thesis_ch1_to_ch3.docx'
 
 # ------------------------- ابزارهای کمکی -------------------------
@@ -423,10 +430,11 @@ def main():
     build_title_page(doc)
 
     ref_sets = []
-    for kicker, title, path in CH_SOURCES:
+    for kicker, path in CH_SOURCES:
         text = path.read_text(encoding='utf-8')
         ref_sets.append(parse_references(text))
         blocks = parse_md_body(text)
+        title = chapter_title_from_h1(text)   # عنوان رسمی فصل از سرفصل «#» خود فایل
 
         section = doc.add_section(WD_SECTION.NEW_PAGE)   # هر فصل از صفحهٔ جدید
         first_chapter = (kicker == 'فصل اول')
