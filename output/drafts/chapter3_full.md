@@ -92,35 +92,6 @@
 
 سه ابزار معرفی‌شده با مدل میانجی‌گری پژوهش هم‌راستا هستند؛ به این صورت که فرم صفتی اسپیلبرگر متغیر مستقل (اضطراب صفتی)، فرم کوتاه پرسشنامهٔ طرحوارهٔ یانگ متغیر میانجی (طرحواره‌های ناسازگار اولیه) و مقیاس تحمل ریسک مالی گرابل و لایتون متغیر وابسته (رفتارهای مالی پرخطر) را می‌سنجند. جهت نمره‌گذاری در هر سه ابزار به گونه‌ای تنظیم شده است که نمرهٔ بالاتر، نشان‌دهندهٔ شدت بیشتر سازهٔ متناظر باشد و این ویژگی، تفسیر روابط فرضیه‌های پژوهش را در فصل چهارم تسهیل می‌کند. هر سه ابزار به همراه سؤالات جمعیت‌شناختی در یک پرسشنامهٔ آنلاین یکپارچه در پلتفرم پرس‌لاین اجرا می‌شوند تا نرخ ریزش شرکت‌کنندگان در میانهٔ پاسخ‌دهی به حداقل برسد.
 
-## منابع به‌کاررفته در این بخش
-
-### الف) منابع فارسی
-
-بشارت، محمدعلی؛ رستمی، رضا؛ پورنقاش، سید عباس؛ و گراوند، فریبرز. (۱۳۹۵). بررسی ساختار عاملی و ویژگی‌های روان‌سنجی پرسشنامه اضطراب حالت-صفت اسپیلبرگر در نمونه‌ای از دانشجویان. فصلنامه اندازه‌گیری تربیتی، ۷(۲۵)، ۷۷-۹۸.
-
-طالبی، محمد؛ یحیی‌زاده‌فر، محمود؛ و سعیدی، پرویز. (۱۳۹۸). اعتباریابی مقیاس تحمل ریسک مالی گرابل و لایتون در بورس اوراق بهادار تهران. فصلنامه علمی-پژوهشی دانش سرمایه‌گذاری، ۸(۳۱)، ۱۵۱-۱۶۸.
-
-یوسفی، ناصر. (۱۳۹۶). ویژگی‌های روان‌سنجی نسخه فارسی پرسشنامه طرحواره یانگ (فرم کوتاه) در نمونه غیربالینی. مجله روانشناسی بالینی، ۹(۲)، ۹۱-۱۰۲.
-
-### ب) منابع لاتین
-
-Grable, J. E. (2017). Financial risk tolerance: A psychometric review. Financial Services Review, 26(2), 1-18.
-
-Grable, J. E., & Lytton, R. H. (1999). Financial risk tolerance revisited: The development of a risk assessment instrument. Financial Services Review, 8(3), 163-181.
-
-Hayes, A. F. (2018). Introduction to mediation, moderation, and conditional process analysis: A regression-based approach (2nd ed.). Guilford Press.
-
-Kline, R. B. (2016). Principles and practice of structural equation modeling (4th ed.). Guilford Press.
-
-Schmidt, N. B., Joiner, T. E., Young, J. E., & Telch, M. J. (1995). The schema questionnaire: Investigation of psychometric properties and the hierarchical structure of a measure of maladaptive schemas. Cognitive Therapy and Research, 19(3), 295-321.
-
-Spielberger, C. D., Gorsuch, R. L., & Lushene, R. E. (1970). Manual for the State-Trait Anxiety Inventory. Consulting Psychologists Press.
-
-Spielberger, C. D. (1983). Manual for the State-Trait Anxiety Inventory. Consulting Psychologists Press.
-
-
-Young, J. E. (1998). Young Schema Questionnaire - Short Form. Schema Therapy Institute.
-
 ## ۳-۵. روش اجرای پژوهش
 
 اجرای پژوهش حاضر به‌صورت آنلاین و از طریق یک فرم یکپارچه در نظر گرفته شده است و همهٔ مراحل آن — از اخذ رضایت آگاهانه تا آماده‌سازی داده‌ها برای تحلیل — بر اساس مصوبات پروپوزال طراحی شده است. پیش‌شرط آغاز گردآوری داده‌ها، طی‌شدن دو مرحلهٔ اداری است: تصویب نهایی پروپوزال در شورای پژوهشی دانشکده و ارسال آن به کمیتهٔ اخلاق در پژوهش دانشگاه علم و هنر یزد جهت اخذ کد اخلاق؛ بنابراین جمع‌آوری داده‌ها تنها پس از دریافت تأییدیهٔ نهایی کمیتهٔ اخلاق آغاز خواهد شد.
