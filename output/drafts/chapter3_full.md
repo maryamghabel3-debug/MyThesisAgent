@@ -1,4 +1,4 @@
-# فصل سوم: روش‌شناسی پژوهش (بخش اول)
+# فصل سوم: روش‌شناسی پژوهش
 
 ## ۳-۱. مقدمه
 
@@ -162,7 +162,6 @@ Hayes, A. F. (2018). Introduction to mediation, moderation, and conditional proc
 
 Kline, R. B. (2016). Principles and practice of structural equation modeling (4th ed.). Guilford Press.
 
-Schmidt, N. B., Joiner, T. E., Young, J. E., & Telch, M. J. (1995). The schema questionnaire: Investigation of psychometric properties and the hierarchical structure of a measure of maladaptive schemas. Cognitive Therapy and Research, 19(3), 295-321.
 
 Spielberger, C. D., Gorsuch, R. L., & Lushene, R. E. (1970). Manual for the State-Trait Anxiety Inventory. Consulting Psychologists Press.
 

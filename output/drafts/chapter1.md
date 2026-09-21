@@ -190,9 +190,9 @@
 
 بشارت، محمدعلی؛ رستمی، رضا؛ پورنقاش، سید عباس؛ و گراوند، فریبرز. (۱۳۹۵). بررسی ساختار عاملی و ویژگی‌های روان‌سنجی پرسشنامه اضطراب حالت-صفت اسپیلبرگر در نمونه‌ای از دانشجویان. فصلنامه اندازه‌گیری تربیتی، ۷(۲۵)، ۷۷-۹۸.
 
-بهدیو، ع.، نمازی، م.، و خواجوی، ش. (۱۳۹۸). ارائه مدلی برای بررسی تأثیرات ترکیبی ریسک‌پذیری، ویژگی‌های فردی و فرهنگی بر بروز رفتار توده‌وار سرمایه‌گذاران در بورس اوراق بهادار تهران. پژوهش های حسابداری مالی و حسابرسی، ۱۱) ۴۲(، ۱-۲۶.
+بهدیو، ع.، نمازی، م.، و خواجوی، ش. (۱۳۹۸). ارائه مدلی برای بررسی تأثیرات ترکیبی ریسک‌پذیری، ویژگی‌های فردی و فرهنگی بر بروز رفتار توده‌وار سرمایه‌گذاران در بورس اوراق بهادار تهران. پژوهش های حسابداری مالی و حسابرسی، ۱۱(۴۲)، ۱-۲۶.
 
-ستایش، م. ح.، کاظم‌پور، م.، و دلالی اصفهانی، ر. (۱۳۹۹). بررسی نقش منابع اطلاعاتی بر رابطه میان ویژگی‌های شخصیتی و رفتار معاملاتی سرمایه‌گذاران حقیقی در بورس اوراق بهادار تهران. مطالعات مدیریت مالی، ۸) ۱۶(،۲۹-۶۱.
+ستایش، م. ح.، کاظم‌پور، م.، و دلالی اصفهانی، ر. (۱۳۹۹). بررسی نقش منابع اطلاعاتی بر رابطه میان ویژگی‌های شخصیتی و رفتار معاملاتی سرمایه‌گذاران حقیقی در بورس اوراق بهادار تهران. مطالعات مدیریت مالی، ۸(۱۶)، ۲۹-۶۱.
 
 طالبی، محمد؛ یحیی‌زاده‌فر، محمود؛ و سعیدی، پرویز. (۱۳۹۸). اعتباریابی مقیاس تحمل ریسک مالی گرابل و لایتون در بورس اوراق بهادار تهران. فصلنامه علمی-پژوهشی دانش سرمایه‌گذاری، ۸(۳۱)، ۱۵۱-۱۶۸.
 
@@ -214,13 +214,11 @@ Barber, B. M., & Odean, T. (2000). Trading is hazardous to your wealth: The comm
 
 Beck, A. T. (1976). Cognitive therapy and the emotional disorders. International Universities Press.
 
-Beck, A. T., & Clark, D. A. (1997). An information processing model of anxiety: Automatic and strategic processes. Behaviour Research and Therapy, 35(1), 49-58.
 
 Bishop, S. J. (2007). Neurocognitive mechanisms of anxiety: an integrative account. Trends in Cognitive Sciences, 11(7), 307-316.
 
 Bodie, Z., Kane, A., & Marcus, A. J. (2018). Investments (11th ed.). McGraw-Hill Education.
 
-Eysenck, M. W., Derakshan, N., Santos, R., & Calvo, M. G. (2007). Anxiety and cognitive performance: attentional control theory. Emotion, 7(2), 336-353.
 
 Fenton-O'Creevy, M., et al. (2012). Emotion regulation and trader expertise: Heart rate variability on the trading floor. Journal of Neuroscience, Psychology, and Economics, 5(4), 227-237.
 
@@ -248,7 +246,6 @@ Mahato, S., et al. (2025). Millennials and zoomers as investors: Behavioral fact
 
 Malkiel, B. G. (2003). The efficient market hypothesis and its critics. Journal of Economic Perspectives, 17(1), 59-82.
 
-Maner, J. K., & Schmidt, N. B. (2006). The role of risk avoidance in anxiety. Behavior Therapy, 37(3), 290-305.
 
 Mishkin, F. S. (2019). The economics of money, banking and financial markets (12th ed.). Pearson.
 
@@ -258,7 +255,6 @@ Shefrin, H., & Statman, M. (1985). The disposition to sell winners too early and
 
 Shiller, R. J. (2015). Irrational exuberance (3rd ed.). Princeton University Press.
 
-Shorey, R. C., et al. (2012). Gambling and early maladaptive schemas in a treatment seeking sample of male alcohol users: A preliminary investigation. Addictive Disorders & Their Treatment, 11(4), 173-182.
 
 Spielberger, C. D. (1983). Manual for the State-Trait Anxiety Inventory. Consulting Psychologists Press.
 
