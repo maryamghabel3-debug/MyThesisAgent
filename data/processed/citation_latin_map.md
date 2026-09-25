@@ -1,4 +1,4 @@
-# نقشهٔ استنادهای خارجی: شکل فارسی ← پاورقی لاتین (مأموریت ۴۰)
+# نقشهٔ استنادهای خارجی: شکل فارسی ← پاورقی لاتین (مأموریت ۴۰ و ۳۹-ب)
 
 > املای لاتین در همهٔ موارد عیناً از مدخل فهرست منابع یکپارچه گرفته شده است.
 > وضعیت‌ها: پاورقی شد = در اولین استناد درج شد؛ پاورقی تکراری نشد = استناد وجود دارد ولی پاورقی لاتین مشابه قبلاً آمده؛ در متن استناد نشد = مدخل فهرست بدون استناد.
@@ -37,12 +37,12 @@
 | هالورسن و همکاران | 2009 | Halvorsen, M., Wang, C. E., Richter, J., Myrland, I., Pedersen, S. K., Eisemann, M., & Waterloo, K. (2009). Early maladaptive schemas, temperament and character traits in clinically depressed and previously depressed subjects. Clinical Psychology & Psychotherapy, 16(5), 394-407. https://doi.org/10.1002/cpp.618 | Halvorsen et al. | پاورقی شد (MATCHED) |
 | کوهنن و چیائو | 2009 | Kuhnen, C. M., & Chiao, J. Y. (2009). Genetic determinants of financial risk taking. PLOS ONE, 4 (2), e4362 | Kuhnen & Chiao | پاورقی شد (MATCHED) |
 | بیکر و نوفسینگر | 2010 | Baker, H. K., & Nofsinger, J. R. (Eds.). (2010). Behavioral finance: Investors, corporations, and markets. John Wiley & Sons. | Baker & Nofsinger | پاورقی شد (MATCHED) |
-| فنتون-اکریوی و همکاران | 2011 | Fenton-O'Creevy, M., Soane, E., Nicholson, N., & Willman, P. (2011). Thinking, feeling and deciding: The influence of emotions on the decision making and performance of traders. Journal of Organizational Behavior, 32(8), 1044-1061. https://doi.org/10.1002/job.720 | Fenton-O'Creevy et al. | پاورقی تکراری نشد (پیش‌تر عیناً آمده) |
+| فنتون-اکریوی و همکاران | 2011 | Fenton-O'Creevy, M., Soane, E., Nicholson, N., & Willman, P. (2011). Thinking, feeling and deciding: The influence of emotions on the decision making and performance of traders. Journal of Organizational Behavior, 32(8), 1044-1061. https://doi.org/10.1002/job.720 | Fenton-O'Creevy et al., 2011 | پاورقی شد (MATCHED) |
 | لیندبرگ و همکاران | 2011 | Lindberg, N., et al. (2011). Early maladaptive schemas in pathological gambling. Journal of Gambling Studies, 27(2), 277-287. | Lindberg et al. | پاورقی شد (MATCHED) |
 | کانمن | 2011 | Kahneman, D. (2011). Thinking, fast and slow. Farrar, Straus and Giroux. | Kahneman | پاورقی شد (MATCHED) |
 | آرنتز و جیکوب | 2012 | Arntz, A., & Jacob, G. (2012). Schema therapy in practice: An introductory guide to the schema mode approach. John Wiley & Sons. | Arntz & Jacob | پاورقی شد (MATCHED) |
 | شوری و همکاران | 2012 | Shorey, R. C., et al. (2012). Gambling and early maladaptive schemas in a treatment seeking sample of male alcohol users: A preliminary investigation. Addictive Disorders & Their Treatment, 11(4), 173-182. https://doi.org/10.1097/adt.0b013e31823eda8f | Shorey et al. | پاورقی شد (MATCHED) |
-| فنتون-اکریوی و همکاران | 2012 | Fenton-O'Creevy, M., et al. (2012). Emotion regulation and trader expertise: Heart rate variability on the trading floor. Journal of Neuroscience, Psychology, and Economics, 5(4), 227-237. | Fenton-O'Creevy et al. | پاورقی شد (MATCHED) |
+| فنتون-اکریوی و همکاران | 2012 | Fenton-O'Creevy, M., et al. (2012). Emotion regulation and trader expertise: Heart rate variability on the trading floor. Journal of Neuroscience, Psychology, and Economics, 5(4), 227-237. | Fenton-O'Creevy et al., 2012 | پاورقی شد (MATCHED) |
 | هارتلی و فلپس | 2012 | Hartley, C. A., & Phelps, E. A. (2012). Anxiety and decision-making. Biological Psychiatry, 72 (2), 113–118 | Hartley & Phelps | پاورقی شد (MATCHED) |
 | گامبتی و گیوسبرتی | 2012 | Gambetti, E., & Giusberti, F. (2012). The effect of anger and anxiety on investment decisions. Journal of Economic Psychology, 33 (5), 1059–1069 | Gambetti & Giusberti | پاورقی شد (MATCHED) |
 | انجمن روانپزشکی آمریکا | 2013 | American Psychiatric Association. (2013). Diagnostic and statistical manual of mental disorders | American Psychiatric Association | پاورقی شد (MATCHED) |
@@ -78,13 +78,13 @@
 |---|---|
 | سازمان همکاری و توسعه اقتصادی | 2021 ×6 |
 
-## نام‌های خارجی بدون استناد (در متن، بدون سال — فقط گزارش؛ تصمیم با کاربر)
+## نام‌های روایی بدون استناد (پاورقی معادل لاتین در اولین رخداد — مأموریت ۳۹-ب)
 
-| شکل فارسی در متن | املای لاتین پیشنهادی | در فهرست منابع؟ |
-|---|---|---|
-| آلبرت الیس | Albert Ellis | خیر |
-| رولو می | Rollo May | خیر |
-| زیگموند فروید | Sigmund Freud | خیر |
+| شکل فارسی در متن | املای لاتین پاورقی | در فهرست منابع؟ | وضعیت |
+|---|---|---|---|
+| زیگموند فروید | Sigmund Freud | خیر | پاورقی شد (اولین رخداد) |
+| آلبرت الیس | Albert Ellis | خیر | پاورقی شد (اولین رخداد) |
+| رولو می | Rollo May | خیر | پاورقی شد (اولین رخداد) |
 
 ## نام‌های از پیش لاتین (بدون پاورقی، فقط گزارش)
 

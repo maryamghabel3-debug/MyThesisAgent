@@ -90,12 +90,12 @@ AUTHOR_MAP = {
     ('هالورسن و همکاران', '2009'): 'Halvorsen et al.',
     ('کوهنن و چیائو', '2009'): 'Kuhnen & Chiao',
     ('بیکر و نوفسینگر', '2010'): 'Baker & Nofsinger',
-    ('فنتون-اکریوی و همکاران', '2011'): "Fenton-O'Creevy et al.",
+    ('فنتون-اکریوی و همکاران', '2011'): "Fenton-O'Creevy et al., 2011",
     ('لیندبرگ و همکاران', '2011'): 'Lindberg et al.',
     ('کانمن', '2011'): 'Kahneman',
     ('آرنتز و جیکوب', '2012'): 'Arntz & Jacob',
     ('شوری و همکاران', '2012'): 'Shorey et al.',
-    ('فنتون-اکریوی و همکاران', '2012'): "Fenton-O'Creevy et al.",
+    ('فنتون-اکریوی و همکاران', '2012'): "Fenton-O'Creevy et al., 2012",
     ('هارتلی و فلپس', '2012'): 'Hartley & Phelps',
     ('گامبتی و گیوسبرتی', '2012'): 'Gambetti & Giusberti',
     ('انجمن روانپزشکی آمریکا', '2013'): 'American Psychiatric Association',
@@ -125,11 +125,11 @@ AUTHOR_MAP = {
     ('ماهاتو و همکاران', '2025'): 'Mahato et al.',
     ('گرال-برونک و همکاران', '2025'): 'Grall-Bronnec et al.',
 }
-# نام‌هایی که در متن بدون استناد آمده‌اند و در فهرست منابع نیستند (فقط گزارش)
-UNCITED_MENTIONS = [
+# نام‌های روایی بدون استناد که در اولین رخداد، پاورقیِ معادل لاتین می‌گیرند (مأموریت ۳۹-ب)
+NARRATIVE_NAMES = [
+    ('زیگموند فروید', 'Sigmund Freud'),
     ('آلبرت الیس', 'Albert Ellis'),
     ('رولو می', 'Rollo May'),
-    ('زیگموند فروید', 'Sigmund Freud'),
 ]
 
 
@@ -418,6 +418,8 @@ class FootnoteMaster:
         self.term_keys = {}          # کلید اصطلاح -> (id, ch, line)
         self.author_used = set()     # کلیدهای نویسندهٔ پاورقی‌گرفته
         self.latin_emitted = set()   # متن‌های لاتین پاورقی‌شده (جلوگیری از پاورقی تکراری یک نام)
+        self.name_used = set()       # نام‌های روایی پاورقی‌گرفته
+        self.name_notes = 0          # شمار پاورقی نام‌های روایی
         self.removed_later = 0
         self.left_intact = set()
         self.not_found = {}          # استناد بدون تطبیق -> شمار
@@ -482,9 +484,20 @@ class FootnoteMaster:
             matches.append(('term', m))
         for m in self.NAR_CITE.finditer(line):
             matches.append(('nar', m))
+        # نام‌های روایی: فقط اولین رخداد، با کنترل مرز (حرف فارسی یا نیم‌فاصله نچسبد)
+        for fa, la in NARRATIVE_NAMES:
+            if fa in self.name_used:
+                continue
+            for nm in re.finditer(re.escape(fa), line):
+                nxt = line[nm.end()] if nm.end() < len(line) else ''
+                if nxt and ('\u0600' <= nxt <= '\u06FF' or nxt == '\u200c'):
+                    continue
+                matches.append(('name', nm, fa, la))
+                break
         matches.sort(key=lambda x: (x[1].start(), -len(x[1].group(0))))
         taken = []
-        for tag, m in matches:
+        for item in matches:
+            tag, m = item[0], item[1]
             if any(s <= m.start() < e or s < m.end() <= e for s, e in taken):
                 continue
             taken.append((m.start(), m.end()))
@@ -492,10 +505,24 @@ class FootnoteMaster:
                 last = self._do_term(line, m, ch_idx, ln_no, kind, out, last)
             elif tag == 'par':
                 last = self._do_par_cite(line, m, kind, out, last)
-            else:
+            elif tag == 'nar':
                 last = self._do_nar_cite(line, m, kind, out, last)
+            else:
+                last = self._do_name(line, m, item[2], item[3], kind, out, last)
         out.append(line[last:])
         return ''.join(out)
+
+    def _do_name(self, line, m, fa, latin, kind, out, last):
+        """نام روایی: درج پاورقی معادل لاتین در اولین رخداد (فقط نام، بدون سال/عنوان)."""
+        if kind not in ('p', 'bullet') or fa in self.name_used:
+            return last
+        self.name_used.add(fa)
+        self.entries.append(latin)
+        self.name_notes += 1
+        fid = len(self.entries)
+        out.append(line[last:m.end()])
+        out.append(FN_TOKEN.format(fid))
+        return m.end()
 
     def _do_term(self, line, m, ch_idx, ln_no, kind, out, last):
         content = m.group(1)
@@ -1014,7 +1041,7 @@ def _ref_entry_lookup(latin, year, ref_index):
 
 def write_citation_map(master, ref_index):
     """گزارش نقشهٔ استنادهای خارجی به تفکیک وضعیت (مأموریت ۴۰)."""
-    lines = ['# نقشهٔ استنادهای خارجی: شکل فارسی ← پاورقی لاتین (مأموریت ۴۰)',
+    lines = ['# نقشهٔ استنادهای خارجی: شکل فارسی ← پاورقی لاتین (مأموریت ۴۰ و ۳۹-ب)',
              '',
              '> املای لاتین در همهٔ موارد عیناً از مدخل فهرست منابع یکپارچه گرفته شده است.',
              '> وضعیت‌ها: پاورقی شد = در اولین استناد درج شد؛ پاورقی تکراری نشد = استناد وجود دارد ولی پاورقی لاتین مشابه قبلاً آمده؛ در متن استناد نشد = مدخل فهرست بدون استناد.',
@@ -1037,11 +1064,12 @@ def write_citation_map(master, ref_index):
             lines.append(f'| {name} | {year} ×{c} |')
     else:
         lines.append('موردی یافت نشد.')
-    lines += ['', '## نام‌های خارجی بدون استناد (در متن، بدون سال — فقط گزارش؛ تصمیم با کاربر)', '']
-    lines += ['| شکل فارسی در متن | املای لاتین پیشنهادی | در فهرست منابع؟ |',
-              '|---|---|---|']
-    for fa, la in UNCITED_MENTIONS:
-        lines.append(f'| {fa} | {la} | خیر |')
+    lines += ['', '## نام‌های روایی بدون استناد (پاورقی معادل لاتین در اولین رخداد — مأموریت ۳۹-ب)', '']
+    lines += ['| شکل فارسی در متن | املای لاتین پاورقی | در فهرست منابع؟ | وضعیت |',
+              '|---|---|---|---|']
+    for fa, la in NARRATIVE_NAMES:
+        status = 'پاورقی شد (اولین رخداد)' if fa in master.name_used else 'رخدادی در متن نداشت'
+        lines.append(f'| {fa} | {la} | خیر | {status} |')
     lines += ['', '## نام‌های از پیش لاتین (بدون پاورقی، فقط گزارش)', '',
               '- سازمان همکاری و توسعه اقتصادی (OECD) — استناد «(سازمان همکاری و توسعه اقتصادی، ۲۰۲۱)» چون نام سازمان است و معادل لاتین‌اش در متن به‌صورت اختصار OECD جا ندارد، پاورقی نگرفت.']
     MAP_PATH.write_text('\n'.join(lines) + '\n', encoding='utf-8')
@@ -1108,6 +1136,7 @@ def main():
     print(f'فایل ساخته شد: {OUT_PATH}')
     print(f'منابع: {fa_n} فارسی + {en_n} لاتین | تکرار حذف‌شده: {dups}')
     print(f'پاورقی اصطلاح: {master.term_notes} | پاورقی نویسنده: {master.author_notes}'
+          f' | پاورقی نام روایی: {master.name_notes}'
           f' | مجموع: {len(master.entries)} | تکراری پاک‌شده: {master.removed_later}')
     print('NOT_FOUND:', sorted(master.not_found.items()) or 'هیچ')
     for a, b in flagged:
