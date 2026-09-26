@@ -203,6 +203,29 @@ def _reorder_ppr(pPr):
     return pPr
 
 
+# ترتیب صحیح فرزندان پیکربندی اجرا در اسکیمای OOXML (CT_RPr)
+_RPR_ORDER = ['rStyle', 'rFonts', 'b', 'bCs', 'i', 'iCs', 'caps', 'smallCaps',
+              'strike', 'dstrike', 'outline', 'shadow', 'emboss', 'imprint',
+              'noProof', 'snapToGrid', 'vanish', 'webHidden', 'color', 'spacing',
+              'w', 'kern', 'position', 'sz', 'szCs', 'highlight', 'u', 'effect',
+              'bdr', 'shd', 'fitText', 'vertAlign', 'rtl', 'cs', 'em', 'lang',
+              'eastAsianLayout', 'specVanish', 'oMath']
+
+
+def _reorder_rpr(rPr):
+    """مرتب‌سازی فرزندان پیکربندی اجرا طبق ترتیب اسکیمای پیکربندی."""
+    local = lambda e: e.tag.split('}')[-1]
+    children = list(rPr)
+    def key(el):
+        name = local(el)
+        return _RPR_ORDER.index(name) if name in _RPR_ORDER else len(_RPR_ORDER)
+    for child in sorted(children, key=key):
+        rPr.remove(child)
+    for child in sorted(children, key=key):
+        rPr.append(child)
+    return rPr
+
+
 def _set_paragraph_bidi(par, rtl=True):
     """افزودن w:bidi (یا val=0 برای LTR) به pPr با ترتیب صحیح اسکیمای پیکربندی."""
     pPr = par._p.get_or_add_pPr()
@@ -303,6 +326,7 @@ def _make_run(par, text, kind, pt, bold):
     if bold:
         rPr.append(OxmlElement('w:b'))
         rPr.append(OxmlElement('w:bCs'))
+    _reorder_rpr(rPr)
     r.append(rPr)
     t = OxmlElement('w:t')
     t.set(qn('xml:space'), 'preserve')
@@ -331,6 +355,7 @@ def _add_footnote_ref_run(par, fn_id):
     va = OxmlElement('w:vertAlign')
     va.set(qn('w:val'), 'superscript')
     rPr.append(va)
+    _reorder_rpr(rPr)
     r.append(rPr)
     ref = OxmlElement('w:footnoteReference')
     ref.set(qn('w:id'), str(fn_id))
@@ -840,6 +865,7 @@ def setup_heading_styles(doc):
         rFonts.set(qn('w:hAnsi'), EN_FONT)
         if rPr.find(qn('w:b')) is not None and rPr.find(qn('w:bCs')) is None:
             rPr.append(OxmlElement('w:bCs'))
+        _reorder_rpr(rPr)
 
 
 def render_blocks(doc, blocks):
@@ -1127,6 +1153,25 @@ def _ref_entry_lookup(latin, year, ref_index):
     return '—'
 
 
+def assert_heading_layout(doc):
+    """نگهبان رگرسیون: تیترهای شماره‌دار باید بید و تراز راست مستقیم داشته
+    باشند تا ورد هرگز به تراز پیش‌فرض (چپ) برنگردد؛ بدون تورفتگی و تب."""
+    for par in doc.paragraphs:
+        sid = par.style.style_id if par.style is not None else ''
+        if sid not in ('Heading2', 'Heading3'):
+            continue
+        pPr = par._p.get_or_add_pPr()
+        bidi = pPr.find(qn('w:bidi'))
+        jc = pPr.find(qn('w:jc'))
+        ok = bidi is not None and jc is not None \
+            and jc.get(qn('w:val')) == 'right' \
+            and pPr.find(qn('w:ind')) is None \
+            and pPr.find(qn('w:tabs')) is None
+        if not ok:
+            raise AssertionError(
+                'تیتر شماره‌دار بدون بید/تراز راست مستقیم: %r' % par.text[:40])
+
+
 def write_citation_map(master, ref_index):
     """گزارش نقشهٔ استنادهای خارجی به تفکیک وضعیت (مأموریت ۴۰)."""
     lines = ['# نقشهٔ استنادهای خارجی: شکل فارسی ← پاورقی لاتین (مأموریت ۴۰ و ۳۹-ب)',
@@ -1220,6 +1265,7 @@ def main():
                  if re.match(r'[A-Za-z]', e.strip())]
     attach_footnotes_part(doc, master)
     write_citation_map(master, ref_index)
+    assert_heading_layout(doc)
     doc.save(OUT_PATH)
 
     fa_n, en_n, dups, flagged = stats
