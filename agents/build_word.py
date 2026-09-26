@@ -36,6 +36,7 @@ CHAPTER_KICKER_PT = 28
 CHAPTER_TITLE_PT = 26
 H2_PT = 14
 H3_PT = 13
+H4_PT = 12
 TABLE_FONT_PT = 11
 LINE_SPACING_PT = 29
 FOOTNOTE_PT = 10   # در راهنما صریح نیست؛ پیش‌فرض ثبت‌شده در گزارش
@@ -260,9 +261,20 @@ def _char_class(ch):
 # حذف می‌شود. همزه‌های واقعی (ء أ ؤ ئ) دست نمی‌خورند.
 HAMZA_STATS = {'removed_0654': 0, 'replaced_06C0': 0}
 
+# دو غلط تایپی دقیق در متن منبع که پرانتز بسته به‌صورت باز تایپ شده؛
+# جایگذاری دقیقِ رشته‌ای (نه سراسری) تا توازن پرانتز برقرار شود.
+PAREN_TYPOS = [('(بیشاپ، ۲۰۰۷(', '(بیشاپ، ۲۰۰۷)'),
+               ('(آیزنک و همکاران، ۲۰۰۷(', '(آیزنک و همکاران، ۲۰۰۷)')]
+PAREN_TYPO_STATS = 0
+
 
 def normalize_hamza(text):
     """حذف نویسهٔ ترکیبی همزه (U+0654) و تبدیل «ۀ» (U+06C0) به «ه» (U+0647)."""
+    global PAREN_TYPO_STATS
+    for bad, good in PAREN_TYPOS:
+        if bad in text:
+            PAREN_TYPO_STATS += text.count(bad)
+            text = text.replace(bad, good)
     if '\u0654' not in text and '\u06C0' not in text:
         return text
     HAMZA_STATS['removed_0654'] += text.count('\u0654')
@@ -281,12 +293,17 @@ def segment_text(text):
             continue
         prev = next((raw[j] for j in range(i - 1, -1, -1) if raw[j] != 'N'), None)
         nxt = next((raw[j] for j in range(i + 1, len(raw)) if raw[j] != 'N'), None)
-        if prev == 'L' and nxt == 'L':
+        # خنثی‌ها جهتِ قویِ بعدی را می‌گیرند وگرنه قبلی را؛ این‌گونه پرانتزهای
+        # اطراف عبارت لاتین در هر دو سو درست می‌افتند و پرانتزهای محتوای فارسی
+        # در قطعهٔ فارسی می‌مانند.
+        if nxt == 'L':
+            kinds.append('L')
+        elif prev == 'L':
             kinds.append('L')
         elif prev == 'F' or nxt == 'F':
             kinds.append('F')
         else:
-            kinds.append(prev or nxt or 'F')
+            kinds.append('F')
     segs = []
     for ch, k in zip(text, kinds):
         if segs and segs[-1][0] == k:
@@ -553,7 +570,9 @@ class FootnoteMaster:
     # ---------- تبدیل خط ----------
     def transform_line(self, line, ch_idx, ln_no):
         kind = _line_kind(line)
-        if kind in ('table', 'fence', 'ref', 'blank'):
+        # تیترها دست‌نخورده می‌مانند: بدون پاورقی و بدون حذف پرانتز اصطلاح —
+        # متن تیتر باید عیناً (شامل واژهٔ لاتین داخل پرانتز) رندر شود.
+        if kind in ('table', 'fence', 'ref', 'blank', 'h'):
             return line
         out, last = [], 0
         # ترکیب هر سه الگو در یک گذر؛ ترتیب اولویت با موقعیت در خط تعیین می‌شود
@@ -771,7 +790,9 @@ def parse_md_body(text):
             i += 1
             fig_pending = True
             continue
-        if line.startswith('### '):
+        if line.startswith('#### '):
+            blocks.append(('h4', line[5:].strip()))
+        elif line.startswith('### '):
             blocks.append(('h3', line[4:].strip()))
         elif line.startswith('## '):
             blocks.append(('h2', line[3:].strip()))
@@ -832,7 +853,8 @@ def setup_heading_styles(doc):
     استایل الحاق می‌شد که ترتیب نامعتبر اسکیمای پیکربندی است و ورد آن را
     نادیده می‌گیرد. اکنون هر دو عنصر در جای صحیح درج می‌شوند.
     """
-    for name, pt in (('Heading 2', H2_PT), ('Heading 3', H3_PT)):
+    for name, pt in (('Heading 2', H2_PT), ('Heading 3', H3_PT),
+                     ('Heading 4', H4_PT)):
         st = doc.styles[name]
         st.font.name = EN_FONT
         st.font.size = Pt(pt)
@@ -840,7 +862,7 @@ def setup_heading_styles(doc):
         st.font.color.rgb = RGBColor(0, 0, 0)
         st.paragraph_format.line_spacing_rule = WD_LINE_SPACING.EXACTLY
         st.paragraph_format.line_spacing = Pt(LINE_SPACING_PT)
-        st.paragraph_format.space_before = Pt(12 if pt == H2_PT else 9)
+        st.paragraph_format.space_before = Pt(12 if pt == H2_PT else 9 if pt == H3_PT else 6)
         st.paragraph_format.space_after = Pt(3 if pt == H2_PT else 2)
         # حذف هر تراز چپ/آغاز و بید قدیمی؛ ست صریح در جای صحیح پیکربندی
         pPr = st.element.get_or_add_pPr()
@@ -865,6 +887,10 @@ def setup_heading_styles(doc):
         rFonts.set(qn('w:hAnsi'), EN_FONT)
         if rPr.find(qn('w:b')) is not None and rPr.find(qn('w:bCs')) is None:
             rPr.append(OxmlElement('w:bCs'))
+        # حذف ایتالیک قالب پیش‌فرض (به‌ویژه Heading 4)
+        for it_tag in ('w:i', 'w:iCs'):
+            for old in rPr.findall(qn(it_tag)):
+                rPr.remove(old)
         _reorder_rpr(rPr)
 
 
@@ -882,6 +908,12 @@ def render_blocks(doc, blocks):
             par.alignment = WD_ALIGN_PARAGRAPH.RIGHT
             _reorder_ppr(par._p.get_or_add_pPr())
             add_rich_text(par, payload, fa_pt=H3_PT, en_pt=H3_PT, bold_all=True)
+        elif kind == 'h4':
+            par = doc.add_paragraph(style='Heading 4')
+            _set_paragraph_bidi(par)
+            par.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            _reorder_ppr(par._p.get_or_add_pPr())
+            add_rich_text(par, payload, fa_pt=H4_PT, en_pt=H4_PT, bold_all=True)
         elif kind == 'caption':
             par = base_paragraph(doc, WD_ALIGN_PARAGRAPH.CENTER, 9, 2)
             add_rich_text(par, payload, bold_all=True)
@@ -1158,7 +1190,7 @@ def assert_heading_layout(doc):
     باشند تا ورد هرگز به تراز پیش‌فرض (چپ) برنگردد؛ بدون تورفتگی و تب."""
     for par in doc.paragraphs:
         sid = par.style.style_id if par.style is not None else ''
-        if sid not in ('Heading2', 'Heading3'):
+        if sid not in ('Heading2', 'Heading3', 'Heading4'):
             continue
         pPr = par._p.get_or_add_pPr()
         bidi = pPr.find(qn('w:bidi'))
@@ -1275,7 +1307,7 @@ def main():
           f' | پاورقی نام روایی: {master.name_notes}'
           f' | مجموع: {len(master.entries)} | تکراری پاک‌شده: {master.removed_later}')
     print('NOT_FOUND:', sorted(master.not_found.items()) or 'هیچ')
-    print(f'همزه: {HAMZA_STATS["removed_0654"]} حذف‌شده (U+0654) + '
+    print(f'اصلاح پرانتز تایپی: {PAREN_TYPO_STATS} | همزه: {HAMZA_STATS["removed_0654"]} حذف‌شده (U+0654) + '
           f'{HAMZA_STATS["replaced_06C0"]} تبدیل «ۀ» به «ه» (U+06C0)')
     for a, b in flagged:
         print('فلگ شباهت:', a[:60], '<->', b[:60])
