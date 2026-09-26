@@ -89,14 +89,14 @@ def render_apa_table(doc, rows):
         table._tbl.tblPr.append(table._tbl.makeelement(qn('w:bidiVisual'), {}))
 
 
-def build():
+def build(md_path=MD_PATH, fig_path=FIG_PATH, out_path=OUT_PATH):
     doc = Document()
     clean_styles(doc)
     setup_heading_styles(doc)
     setup_section(doc.sections[0])
     _set_section_rtl(doc.sections[0])
 
-    lines = MD_PATH.read_text(encoding='utf-8').splitlines()
+    lines = Path(md_path).read_text(encoding='utf-8').splitlines()
     i = 0
     pending_fig_caption = None
     while i < len(lines):
@@ -111,6 +111,13 @@ def build():
         if line.startswith('> '):
             par = base_paragraph(doc, space_after=6)
             add_md_rich(par, line[2:])
+            continue
+        if line.startswith('@subtitle '):
+            par = base_paragraph(doc, WD_ALIGN_PARAGRAPH.CENTER, 0, 10)
+            add_md_rich(par, '**' + line[len('@subtitle '):] + '**', fa_pt=14, en_pt=13)
+            continue
+        if line.startswith('@pagebreak'):
+            doc.add_page_break()
             continue
         if line.startswith('## '):
             par = doc.add_paragraph(style='Heading 2')
@@ -133,7 +140,7 @@ def build():
             render_apa_table(doc, rows)
             continue
         if line.startswith('!['):
-            doc.add_picture(str(FIG_PATH), width=Cm(14))
+            doc.add_picture(str(fig_path), width=Cm(14))
             doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
             if pending_fig_caption:
                 par = base_paragraph(doc, WD_ALIGN_PARAGRAPH.CENTER, 3, 6)
@@ -150,9 +157,10 @@ def build():
         par = base_paragraph(doc, space_after=0)
         add_md_rich(par, line)
 
-    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    doc.save(str(OUT_PATH))
-    print('سند فصل چهارم ساخته شد:', OUT_PATH)
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    doc.save(str(out_path))
+    print('سند فصل چهارم ساخته شد:', out_path)
 
 
 if __name__ == '__main__':
