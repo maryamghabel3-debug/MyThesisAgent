@@ -113,6 +113,7 @@ AUTHOR_MAP = {
     ('آن و همکاران', '2021'): 'An et al.',
     ('آن، لی و وو', '2021'): 'An, Li, & Wu',
     ('بدلی و همکاران', '2021'): 'Baddeley et al.',
+    ('سازمان همکاری و توسعه اقتصادی', '2021'): 'OECD, 2021',
     ('بدلی، آیزنک و اندرسون', '2021'): 'Baddeley, Eysenck, & Anderson',
     ('آرنا و همکاران', '2022'): 'Arena et al.',
     ('چارلز و کاسیلینگام', '2022'): 'Charles & Kasilingam',
@@ -165,15 +166,53 @@ def _insert_sectpr_element(section, tag, attrs=None, children=()):
     return el
 
 
+# ترتیب صحیح فرزندان پیکربندی پاراگراف در اسکیمای OOXML (CT_PPr)
+_PPR_ORDER = ['pStyle', 'keepNext', 'keepLines', 'pageBreakBefore', 'framePr',
+              'widowControl', 'numPr', 'suppressLineNumbers', 'pBdr', 'shd',
+              'tabs', 'suppressAutoHyphens', 'kinsoku', 'wordWrap',
+              'overflowPunct', 'topLinePunct', 'autoSpaceDE', 'autoSpaceDN',
+              'bidi', 'adjustRightInd', 'snapToGrid', 'spacing', 'ind',
+              'contextualSpacing', 'mirrorIndents', 'suppressOverlap', 'jc',
+              'textDirection', 'textAlignment', 'textboxTightWrap',
+              'outlineLvl', 'divId', 'cnfStyle', 'rPr', 'sectPr', 'pPrChange']
+
+
+def _ppr_insert(pPr, el):
+    """درج عنصر پیکربندی پاراگراف در جای صحیح بر اساس ترتیب اسکیمای پیکربندی."""
+    local = lambda e: e.tag.split('}')[-1]
+    for child in pPr:
+        if local(child) in _PPR_ORDER and local(el) in _PPR_ORDER \
+                and _PPR_ORDER.index(local(child)) > _PPR_ORDER.index(local(el)):
+            child.addprevious(el)
+            return el
+    pPr.append(el)
+    return el
+
+
+def _reorder_ppr(pPr):
+    """مرتب‌سازی همهٔ فرزندان پیکربندی پاراگراف طبق ترتیب اسکیمای پیکربندی."""
+    local = lambda e: e.tag.split('}')[-1]
+    children = list(pPr)
+    def key(el):
+        name = local(el)
+        return _PPR_ORDER.index(name) if name in _PPR_ORDER else len(_PPR_ORDER)
+    for child in sorted(children, key=key):
+        pPr.remove(child)
+    for child in sorted(children, key=key):
+        pPr.append(child)
+    return pPr
+
+
 def _set_paragraph_bidi(par, rtl=True):
-    """افزودن w:bidi (یا val=0 برای LTR) به pPr."""
+    """افزودن w:bidi (یا val=0 برای LTR) به pPr با ترتیب صحیح اسکیمای پیکربندی."""
     pPr = par._p.get_or_add_pPr()
     old = pPr.find(qn('w:bidi'))
     if old is not None:
         pPr.remove(old)
     el = pPr.makeelement(qn('w:bidi'), {})
     el.set(qn('w:val'), '1' if rtl else '0')
-    pPr.append(el)
+    _ppr_insert(pPr, el)
+    return pPr
 
 
 def _set_section_rtl(section):
@@ -191,6 +230,21 @@ def _char_class(ch):
     if 'A' <= ch <= 'Z' or 'a' <= ch <= 'z':
         return 'L'
     return 'N'
+
+
+# ---------- نرمال‌سازی همزه (مأموریت ۴۰ نهایی) ----------
+# همزهٔ اضافهٔ ترکیبی روی «ه» در فونت B Nazanin جدا از حرف رندر می‌شود؛
+# حذف می‌شود. همزه‌های واقعی (ء أ ؤ ئ) دست نمی‌خورند.
+HAMZA_STATS = {'removed_0654': 0, 'replaced_06C0': 0}
+
+
+def normalize_hamza(text):
+    """حذف نویسهٔ ترکیبی همزه (U+0654) و تبدیل «ۀ» (U+06C0) به «ه» (U+0647)."""
+    if '\u0654' not in text and '\u06C0' not in text:
+        return text
+    HAMZA_STATS['removed_0654'] += text.count('\u0654')
+    HAMZA_STATS['replaced_06C0'] += text.count('\u06C0')
+    return text.replace('\u0654', '').replace('\u06C0', '\u0647')
 
 
 def segment_text(text):
@@ -258,7 +312,8 @@ def _make_run(par, text, kind, pt, bold):
 
 
 def add_script_runs(par, text, fa_pt=FA_SIZE, en_pt=EN_SIZE, bold=False):
-    """افزودن متن با قطعه‌بندی فارسی/لاتین به پاراگراف."""
+    """افزودن متن با قطعه‌بندی فارسی/لاتین به پاراگراف؛ با نرمال‌سازی همزه."""
+    text = normalize_hamza(text)
     for kind, seg in segment_text(text):
         _make_run(par, seg, kind, fa_pt if kind == 'F' else en_pt, bold)
 
@@ -746,17 +801,35 @@ def parse_references(text):
 # ------------------------- رندر اجزا -------------------------
 
 def setup_heading_styles(doc):
+    """استایل تیترها: راست‌چین + راست‌به‌چپ با ترتیب صحیح عناصر پیکربندی.
+
+    علت ریشه‌ای چپ‌چین ماندن: عنصر «بید» پس از «سطح بند» به پیکربندی
+    استایل الحاق می‌شد که ترتیب نامعتبر اسکیمای پیکربندی است و ورد آن را
+    نادیده می‌گیرد. اکنون هر دو عنصر در جای صحیح درج می‌شوند.
+    """
     for name, pt in (('Heading 2', H2_PT), ('Heading 3', H3_PT)):
         st = doc.styles[name]
         st.font.name = EN_FONT
         st.font.size = Pt(pt)
         st.font.bold = True
         st.font.color.rgb = RGBColor(0, 0, 0)
-        st.paragraph_format.alignment = WD_ALIGN_PARAGRAPH.RIGHT
         st.paragraph_format.line_spacing_rule = WD_LINE_SPACING.EXACTLY
         st.paragraph_format.line_spacing = Pt(LINE_SPACING_PT)
         st.paragraph_format.space_before = Pt(12 if pt == H2_PT else 9)
         st.paragraph_format.space_after = Pt(3 if pt == H2_PT else 2)
+        # حذف هر تراز چپ/آغاز و بید قدیمی؛ ست صریح در جای صحیح پیکربندی
+        pPr = st.element.get_or_add_pPr()
+        for tag in ('w:jc', 'w:bidi'):
+            for old in pPr.findall(qn(tag)):
+                pPr.remove(old)
+        bidi = OxmlElement('w:bidi')
+        bidi.set(qn('w:val'), '1')
+        _ppr_insert(pPr, bidi)
+        jc = OxmlElement('w:jc')
+        jc.set(qn('w:val'), 'right')
+        _ppr_insert(pPr, jc)
+        _reorder_ppr(pPr)
+        # فونت‌ها و بولد دوطرفه
         rPr = st.element.get_or_add_rPr()
         rFonts = rPr.find(qn('w:rFonts'))
         if rFonts is None:
@@ -765,11 +838,8 @@ def setup_heading_styles(doc):
         rFonts.set(qn('w:cs'), FA_FONT)
         rFonts.set(qn('w:ascii'), EN_FONT)
         rFonts.set(qn('w:hAnsi'), EN_FONT)
-        pPr = st.element.get_or_add_pPr()
-        if pPr.find(qn('w:bidi')) is None:
-            bidi = OxmlElement('w:bidi')
-            bidi.set(qn('w:val'), '1')
-            pPr.append(bidi)
+        if rPr.find(qn('w:b')) is not None and rPr.find(qn('w:bCs')) is None:
+            rPr.append(OxmlElement('w:bCs'))
 
 
 def render_blocks(doc, blocks):
@@ -777,10 +847,14 @@ def render_blocks(doc, blocks):
         if kind == 'h2':
             par = doc.add_paragraph(style='Heading 2')
             _set_paragraph_bidi(par)
+            par.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            _reorder_ppr(par._p.get_or_add_pPr())
             add_rich_text(par, payload, fa_pt=H2_PT, en_pt=H2_PT, bold_all=True)
         elif kind == 'h3':
             par = doc.add_paragraph(style='Heading 3')
             _set_paragraph_bidi(par)
+            par.alignment = WD_ALIGN_PARAGRAPH.RIGHT
+            _reorder_ppr(par._p.get_or_add_pPr())
             add_rich_text(par, payload, fa_pt=H3_PT, en_pt=H3_PT, bold_all=True)
         elif kind == 'caption':
             par = base_paragraph(doc, WD_ALIGN_PARAGRAPH.CENTER, 9, 2)
@@ -914,22 +988,36 @@ def right(doc, text, size, bold=False, before=0, after=0):
     return par
 
 
+def _center_mixed(doc, parts, before=0, after=0):
+    """پاراگراف وسط‌چین با قطعه‌های هم‌اندازه ولی بولد متفاوت (برچسب/نام)."""
+    par = base_paragraph(doc, WD_ALIGN_PARAGRAPH.CENTER, before, after)
+    fmt = par.paragraph_format
+    fmt.left_indent = None
+    fmt.right_indent = None
+    fmt.first_line_indent = None
+    for text, bold, size in parts:
+        add_script_runs(par, text, fa_pt=size, en_pt=size, bold=bold)
+    return par
+
+
 def build_front_matter(doc):
     setup_section(doc.sections[0], numbering='none', vcenter=True)
     centered(doc, 'بسم الله الرحمن الرحیم', 16, bold=True)
 
+    # صفحهٔ عنوان — همهٔ خطوط وسط‌چین + راست‌به‌چپ، بدون تب و تورفتگی
+    # اندازه‌ها طبق راهنمای دانشگاه: دانشگاه ۱۰ سیاه، عنوان ۲۴ سیاه،
+    # مقطع ۱۴ سیاه، برچسب‌ها ۱۴ معمولی، نام‌ها و سال ۱۴ سیاه
     sec = doc.add_section(WD_SECTION.NEW_PAGE)
     setup_section(sec, numbering='none')
-    centered(doc, '[نام دانشگاه]', 10, bold=True, after=3)
-    centered(doc, 'وابسته به جهاد دانشگاهی', 10, bold=True, after=18)
-    centered(doc, 'پایان‌نامه کارشناسی ارشد دانشکدهٔ روان‌شناسی', 14, bold=True, after=6)
-    centered(doc, 'گروه روان‌شناسی بالینی', 14, bold=True, after=18)
+    centered(doc, 'دانشگاه علم و هنر یزد', 10, bold=True, after=18)
     centered(doc, THESIS_TITLE, 24, bold=True, before=12, after=18)
-    right(doc, 'استاد راهنما:', 14, after=3)
-    centered(doc, 'دکتر سعید وزیری یزدی', 14, bold=True, after=9)
-    right(doc, 'نام دانشجو:', 14, after=3)
-    centered(doc, '[نام دانشجو]', 14, bold=True, after=9)
-    centered(doc, 'مهر ۱۴۰۵', 14, bold=True, before=12)
+    centered(doc, 'پایان‌نامه کارشناسی ارشد روان‌شناسی بالینی', 14, bold=True,
+             after=18)
+    _center_mixed(doc, [('استاد راهنما: ', False, 14),
+                        ('دکتر سعید وزیری یزدی', True, 14)], after=9)
+    _center_mixed(doc, [('نگارنده: ', False, 14),
+                        ('مریم قابل', True, 14)], after=9)
+    centered(doc, '۱۴۰۵', 14, bold=True, before=12)
     page_break(doc)
     centered(doc, '[فرم صورت‌جلسه دفاع پس از برگزاری جلسه دفاع در این محل قرار می‌گیرد]',
              12, before=120)
@@ -961,13 +1049,13 @@ def build_lists_section(doc):
                         'ساخته و به‌روزرسانی شود — با کلیک راست و Update Field]')
     page_break(doc)
     centered(doc, 'فهرست جدول‌ها', 14, bold=True, after=9)
-    right(doc, 'جدول ۲-۱. حوزه‌ها و طرحواره‌های ناسازگار اولیه در مدل یانگ '
+    centered(doc, 'جدول ۲-۱. حوزه‌ها و طرحواره‌های ناسازگار اولیه در مدل یانگ '
                '— [شمارهٔ صفحه پس از صفحه‌بندی نهایی در Word تکمیل شود]', 12, after=3)
-    right(doc, 'جدول ۳-۱. خلاصهٔ ابزارهای پژوهش '
+    centered(doc, 'جدول ۳-۱. خلاصهٔ ابزارهای پژوهش '
                '— [شمارهٔ صفحه پس از صفحه‌بندی نهایی در Word تکمیل شود]', 12, after=3)
     page_break(doc)
     centered(doc, 'فهرست شکل‌ها', 14, bold=True, after=9)
-    right(doc, 'شکل ۲-۱. مدل مفهومی پژوهش '
+    centered(doc, 'شکل ۲-۱. مدل مفهومی پژوهش '
                '— [شمارهٔ صفحه پس از صفحه‌بندی نهایی در Word تکمیل شود]', 12, after=3)
     page_break(doc)
     centered(doc, 'فهرست علائم', 14, bold=True, after=9)
@@ -1070,8 +1158,10 @@ def write_citation_map(master, ref_index):
     for fa, la in NARRATIVE_NAMES:
         status = 'پاورقی شد (اولین رخداد)' if fa in master.name_used else 'رخدادی در متن نداشت'
         lines.append(f'| {fa} | {la} | خیر | {status} |')
-    lines += ['', '## نام‌های از پیش لاتین (بدون پاورقی، فقط گزارش)', '',
-              '- سازمان همکاری و توسعه اقتصادی (OECD) — استناد «(سازمان همکاری و توسعه اقتصادی، ۲۰۲۱)» چون نام سازمان است و معادل لاتین‌اش در متن به‌صورت اختصار OECD جا ندارد، پاورقی نگرفت.']
+    lines += ['', '## نام سازمانی از پیش لاتین', '',
+              '- سازمان همکاری و توسعه اقتصادی (۲۰۲۱) — در اولین رخداد پاورقی گرفت. '
+              'طبق قاعدهٔ تطبیق با مدخل فهرست منابع، چون مدخل مصوب با «OECD.» آغاز می‌شود، '
+              'شکل پاورقی عیناً از همان مدخل گرفته شد: OECD, 2021؛ پنج رخداد بعدی بدون پاورقی ماند.']
     MAP_PATH.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
 
@@ -1139,6 +1229,8 @@ def main():
           f' | پاورقی نام روایی: {master.name_notes}'
           f' | مجموع: {len(master.entries)} | تکراری پاک‌شده: {master.removed_later}')
     print('NOT_FOUND:', sorted(master.not_found.items()) or 'هیچ')
+    print(f'همزه: {HAMZA_STATS["removed_0654"]} حذف‌شده (U+0654) + '
+          f'{HAMZA_STATS["replaced_06C0"]} تبدیل «ۀ» به «ه» (U+06C0)')
     for a, b in flagged:
         print('فلگ شباهت:', a[:60], '<->', b[:60])
 

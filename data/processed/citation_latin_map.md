@@ -60,6 +60,7 @@
 | آن و همکاران | 2021 | An, H., Li, M., & Wu, W. (2021). The impact of financial anxiety on individual investor's risky asset holdings: Evidence from China. Emerging Markets Finance and Trade, 57(11), 3217-3232. | An et al. | پاورقی شد (MATCHED) |
 | آن، لی و وو | 2021 | An, H., Li, M., & Wu, W. (2021). The impact of financial anxiety on individual investor's risky asset holdings: Evidence from China. Emerging Markets Finance and Trade, 57(11), 3217-3232. | An, Li, & Wu | پاورقی شد (MATCHED) |
 | بدلی و همکاران | 2021 | Baddeley, A. D., Eysenck, M. W., & Anderson, M. C. (2021). Memory (3rd ed.). Routledge. | Baddeley et al. | پاورقی شد (MATCHED) |
+| سازمان همکاری و توسعه اقتصادی | 2021 | OECD. (2021). Retail investors in capital markets: Key findings and main messages. OECD Publishing. | OECD, 2021 | پاورقی شد (MATCHED) |
 | بدلی، آیزنک و اندرسون | 2021 | Baddeley, A. D., Eysenck, M. W., & Anderson, M. C. (2021). Memory (3rd ed.). Routledge. | Baddeley, Eysenck, & Anderson | پاورقی شد (MATCHED) |
 | آرنا و همکاران | 2022 | Arena, M., Sbai, E., & Soriya, S. (2022). Personality traits and behaviour biases: The moderating role of risk-tolerance. Frontiers in Psychology, 13, 949638. | Arena et al. | پاورقی شد (MATCHED) |
 | چارلز و کاسیلینگام | 2022 | Charles, V., & Kasilingam, R. (2022). The role of anxiety in financial decisions. Review of Behavioral Finance, 14(5), 720-735. | Charles & Kasilingam | پاورقی شد (MATCHED) |
@@ -74,9 +75,7 @@
 
 ## استنادهای بدون تطبیق (NOT_FOUND — پاورقی نگرفتند)
 
-| شکل فارسی | سال |
-|---|---|
-| سازمان همکاری و توسعه اقتصادی | 2021 ×6 |
+موردی یافت نشد.
 
 ## نام‌های روایی بدون استناد (پاورقی معادل لاتین در اولین رخداد — مأموریت ۳۹-ب)
 
@@ -86,6 +85,6 @@
 | آلبرت الیس | Albert Ellis | خیر | پاورقی شد (اولین رخداد) |
 | رولو می | Rollo May | خیر | پاورقی شد (اولین رخداد) |
 
-## نام‌های از پیش لاتین (بدون پاورقی، فقط گزارش)
+## نام سازمانی از پیش لاتین
 
-- سازمان همکاری و توسعه اقتصادی (OECD) — استناد «(سازمان همکاری و توسعه اقتصادی، ۲۰۲۱)» چون نام سازمان است و معادل لاتین‌اش در متن به‌صورت اختصار OECD جا ندارد، پاورقی نگرفت.
+- سازمان همکاری و توسعه اقتصادی (۲۰۲۱) — در اولین رخداد پاورقی گرفت. طبق قاعدهٔ تطبیق با مدخل فهرست منابع، چون مدخل مصوب با «OECD.» آغاز می‌شود، شکل پاورقی عیناً از همان مدخل گرفته شد: OECD, 2021؛ پنج رخداد بعدی بدون پاورقی ماند.
