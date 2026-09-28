@@ -963,8 +963,10 @@ def attach_footnotes_part(doc, master):
         return
     body = ['<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',
             '<w:footnotes xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">',
-            '<w:footnote w:id="-1"><w:p><w:r><w:separator/></w:r></w:p></w:footnote>',
-            '<w:footnote w:id="0"><w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>']
+            '<w:footnote w:type="separator" w:id="-1">'
+            '<w:p><w:r><w:separator/></w:r></w:p></w:footnote>',
+            '<w:footnote w:type="continuationSeparator" w:id="0">'
+            '<w:p><w:r><w:continuationSeparator/></w:r></w:p></w:footnote>']
     for i, text in enumerate(master.entries, start=1):
         is_latin = bool(re.match(r'[A-Za-z]', text))
         font = EN_FONT if is_latin else FA_FONT
