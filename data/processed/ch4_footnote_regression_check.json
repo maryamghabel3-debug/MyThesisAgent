@@ -1,0 +1,26 @@
+{
+  "raw_n": 212,
+  "excluded_n": 41,
+  "valid_n": 171,
+  "excluded_breakdown": {
+    "حذف: عدم تکمیل یا رد رضایت آگاهانه": 7,
+    "حذف: پاسخ ناقص (بیش از ۳۰٪)": 14,
+    "حذف: الگوی پاسخ یکنواخت": 11,
+    "حذف: زمان پاسخ‌دهی زیر ۱۲۰ ثانیه": 9
+  },
+  "bootstrap_resamples_configured": 5000,
+  "bootstrap_seed": 42,
+  "bootstrap_resamples_executed": 5000,
+  "bootstrap_executed_evidence": "data/simulated/realism_v2/ch4_v2_stats.json: med.ci_ab/ci_cp/ci_ct are produced only inside the range(N_BOOT) percentile loop of agents/analyze_ch4_v2.py; executed iteration count is not independently logged",
+  "paragraphs_before": 339,
+  "paragraphs_after": 339,
+  "tables_before": 9,
+  "tables_after": 9,
+  "table_cells_before": 276,
+  "table_cells_after": 276,
+  "footnotes_ch1_to_ch3": 112,
+  "footnotes_ch4": 2,
+  "separator_entries_excluded_from_counts": true,
+  "before_ref": "main@95dd474",
+  "after_ref": "fix/ch4-english-terms-footnotes (working tree)"
+}
