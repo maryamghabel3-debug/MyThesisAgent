@@ -156,6 +156,11 @@ INSTRUMENTS = [
       'Young Schema Questionnaire - Short Form')),
     ('GL-RTS', 'Financial Risk Tolerance Scale (GL-RTS)',
      ('GL-RTS', 'Financial Risk Tolerance Scale')),
+    # مأموریت ۴۶: این سه کد هم مشمول قانونِ «نخستین کاربرد = پاورقی، بعدی‌ها حذف» شدند
+    ('PROCESS', 'PROCESS macro (Hayes)',
+     ('PROCESS', 'PROCESS Model 4', 'PROCESS, Model 4')),
+    ('YSQ–L3', 'YSQ–L3', ('YSQ–L3',)),
+    ('5-HTTLPR', '5-HTTLPR', ('5-HTTLPR',)),
 ]
 
 
@@ -171,6 +176,44 @@ INSTR_WINDOW = 60  # فاصلهٔ کاراکتری برای ادغام چند پ
 
 CH_LABELS = ('فصل اول', 'فصل دوم', 'فصل سوم')
 
+INSTRU_KIND = {'PROCESS': 'B-کد نرم‌افزار', 'YSQ–L3': 'B-کد ابزار',
+               '5-HTTLPR': 'B-نماد ژنی'}
+
+# اصلاح مرزِ «اصطلاح فارسی» در رجیستری (فاز ۱، بند ۳ مأموریت ۴۶): جایی که عبارتِ
+# همسایه با خودِ اصطلاح فرق دارد، صورتِ درستِ اصطلاح را صریحاً می‌نویسیم.
+TERM_FA_OVERRIDE = {
+    'trait anxiety': 'اضطراب صفتی',
+    'loss aversion': 'زیان‌گریزی',
+    'schema coping style': 'سبک مقابله‌ای',
+    'early maladaptive schemas': 'طرحواره‌های ناسازگار اولیه',
+    'efficient market hypothesis': 'فرضیه بازار کارا',
+    'behavioral economics': 'اقتصاد رفتاری',
+    'prospect theory': 'نظریه چشم‌انداز',
+    'attentional control theory': 'نظریهٔ کنترل توجه',
+    'financial market traders': 'معامله‌گران بازارهای مالی',
+    'research gap': 'شکاف پژوهشی',
+    'anxiety': 'اضطراب',
+    'risk perception': 'ادراک ریسک',
+    'decision quality': 'کیفیت فرایند تصمیم‌گیری',
+    'schema domains': 'پنج حوزهٔ طرحواره‌ای',
+    'surrender': 'تسلیم',
+    'avoidance': 'اجتناب',
+    'risk capacity': 'ظرفیت عینی ریسک',
+    'structural equation modeling': 'مدل‌سازی معادلات ساختاری',
+    'applied research': 'پژوهش‌های کاربردی',
+    'descriptive-correlational': 'توصیفی-همبستگی',
+    'mediation model': 'مدل میانجی‌گری',
+    'convenience sampling': 'نمونه‌گیری در دسترس',
+    'snowball sampling': 'روش گلوله‌برفی',
+    'proxy measure': 'شاخص نیابتی',
+    '__instr__STAI-Y2': 'پرسشنامه استاندارد اضطراب حالت-صفت اسپیلبرگر',
+    '__instr__YSQ-SF': 'پرسشنامه طرحواره یانگ — فرم کوتاه',
+    '__instr__GL-RTS': 'مقیاس تحمل ریسک مالی گرابل و لایتون',
+    '__instr__PROCESS': 'ابزار پراسس — الگوی شمارهٔ ۴',
+    '__instr__YSQ–L3': 'پرسشنامهٔ طرحواره یانگ — فرم بلند',
+    '__instr__5-HTTLPR': 'ژن انتقال‌دهنده سروتونین',
+}
+
 
 def instr_spans(line):
     """همۀ پرانتزهای ابزار در یک سطر: فهرست (start, end, unit)."""
@@ -183,18 +226,48 @@ def instr_spans(line):
 
 
 def _persian_phrase(line, pos):
-    """«عبارت فارسیِ پیش از پرانتز» برای ستون رجیستری؛ تا ۵ واژۀ پشت‌سرهم."""
+    """«عبارت فارسیِ پیش از پرانتز» برای ستون رجیستری — مأموریت ۴۶: مرزِ دقیق.
+    واژۀ دارای رقم/لاتین/ویرگولِ درون‌واژگی قطع می‌کند؛ « واژۀ بازکننده‌ را نگه می‌دارد
+    و پس از آن می‌ایستد؛ ویرگولِ چسبیده به همسایه (مثل «ویژگی،») همان‌جا قطع می‌کند؛
+    خط‌تیرۀ میان دو واژۀ فارسی (حالت-صفت) بخشی از اصطلاح است؛ قاعدۀ واژه‌های
+    دستوریِ آغازین (از/به/در/…) از ابتدای عبارت پاک می‌شود.
+    """
     tail = re.sub(r'\*\*.+?\*\*\s*', ' ', line[:pos])
-    words = [w.strip('.:،؛)!؟«»()[]') for w in re.split(r'\s+', tail.rstrip())]
-    stop = {'از', 'به', 'در', 'با', 'که', 'است', 'را', 'این', 'خود', 'و', 'یا', 'نیز', 'هم', 'می'}
+    toks = re.split(r'\s+', tail.rstrip())
+    ok_word = re.compile(r'^(?:[\u0600-\u06FF\u200c\u0654\u06C0\u06C9]|-(?=[\u0600-\u06FF]))+$')
+    stop = {'از', 'به', 'در', 'با', 'که', 'است', 'را', 'این', 'خود', 'و', 'یا',
+            'نیز', 'هم', 'می', 'بر', 'تحت', 'طی', 'شامل', 'یعنی', 'پایهٔ',
+            'مبنای', 'اساس', 'نشان', 'داده', 'داد', 'کرد', 'شد', 'دهد', 'شود',
+            'می‌دهد', 'منجر', 'شده', 'ام',
+            'است،', 'عنوان', 'زمرهٔ', 'معروف', 'خوانده', 'نامیده', 'محسوب'}
     phrase = []
-    for w in reversed(words):
-        if re.fullmatch(r'[\u0600-\u06FF\u200c\u0654\u06C0\u06C9]+', w) and w not in stop:
-            phrase.insert(0, w)
-        else:
+    for w in reversed(toks):
+        if w.endswith('»'):
+            core = w.rstrip('»').strip('.:،؛)!؟()[]')
+            if core.startswith('«'):
+                core = core[1:]
+                if core and ok_word.match(core):
+                    phrase.insert(0, core)
+                break
+            if core and ok_word.match(core):
+                phrase.insert(0, core)
+                continue
             break
+        if w.startswith('«'):
+            core = w.strip('«».:،؛)!؟()[]')
+            if core and ok_word.match(core):
+                phrase.insert(0, core)
+            break
+        if any(c in w for c in '،؛:؛') or w.endswith(('.', '!', '؟')):
+            break
+        core = w.strip('.:،؛)!؟()[]')
+        if not core or not ok_word.match(core):
+            break
+        phrase.insert(0, core)
         if len(phrase) >= 5:
             break
+    while phrase and phrase[0] in stop:
+        phrase.pop(0)
     return ' '.join(phrase)
 
 
@@ -627,10 +700,12 @@ class FootnoteMaster:
                     self.instr_line[name] = (ch_idx, ln_no)
                     self.instr_removed[name] = 0
                     first_pos = min(s[0] for s in mine)
+                    ukey = '__instr__' + name
                     self.registry.append(dict(
-                        kind='B-کد ابزار', fa=_persian_phrase(line, first_pos),
+                        kind=INSTRU_KIND.get(name, 'B-کد ابزار'),
+                        fa=TERM_FA_OVERRIDE.get(ukey) or _persian_phrase(line, first_pos),
                         en=note, ch=ch_idx, ln=ln_no, fid=self.instr_first[name],
-                        key='__instr__' + name))
+                        key=ukey))
                 for m in self.ELIG_RE.finditer(line):
                     c = m.group(1)
                     if not self.term_eligible(c) or not _persian_before(line, m.start()):
@@ -645,7 +720,8 @@ class FootnoteMaster:
                         self.term_keys[k] = (len(self.entries), ch_idx, ln_no)
                         self.term_notes += 1
                         self.registry.append(dict(
-                            kind='A-معادل اصطلاح', fa=_persian_phrase(line, m.start()),
+                            kind='A-معادل اصطلاح',
+                            fa=TERM_FA_OVERRIDE.get(k) or _persian_phrase(line, m.start()),
                             en=c.strip(), ch=ch_idx, ln=ln_no, fid=len(self.entries),
                             key=k))
 
@@ -1386,12 +1462,13 @@ REGISTRY_PATH = ROOT / 'data/processed/english_term_first_occurrence_registry.md
 def write_term_registry(master):
     """رجیستری «اولین کاربرد سراسری» — خروجی گزارش فاز ۲ مأموریت ۴۵."""
     rows = sorted(master.registry, key=lambda r: r['fid'])
-    L = ['# رجیستری اولین کاربرد سراسریِ معادل‌های انگلیسی (مأموریت ۴۵)',
+    L = ['# رجیستری اولین کاربرد سراسریِ معادل‌های انگلیسی (مأموریت ۴۵، به‌روزشدۀ ۴۶)',
          '',
          'مبنا: ترتیب واقعی سند Word — صفحات مقدماتی (چکیده/کلمات کلیدی: فاقد هرگونه '
          'پرانتز لاتین، بنابراین نخستین کاربرد در همان فصل‌هاست) ← فصل اول ← فصل دوم ← '
          'فصل سوم ← منابع. هر اصطلاح فقط در نخستین کاربرد پاورقی می‌گیرد؛ همهٔ کاربردهای '
-         'بعدی (متن، بولد و تیترها) پاک‌سازی می‌شوند. استناد/آمار/DOI/نرم‌افزار استثنا هستند.',
+         'بعدی (متن، بولد و تیترها) پاک‌سازی می‌شوند. استناد/آمار/DOI و نامِ سایر '
+         'نرم‌افزارها استثنا هستند؛ PROCESS طبق مأموریت ۴۶ پاورقیِ واحد می‌گیرد.',
          '',
          '| اصطلاح فارسی | معادل انگلیسی | اولین محل | نوع | پاورقی ساخته شد؟ | کاربردهای بعدی پاک‌سازی شد؟ |',
          '|---|---|---|---|---|---|']
@@ -1410,9 +1487,13 @@ def write_term_registry(master):
           '- استنادهای درون‌متنی (مثل «(بک، ۱۹۷۶)»)، عبارت‌های آماری/فرمولی '
           '(مثل «(r = .276, p < .001)» و «(a×b)» و «(P<0.05)»)، DOI/URL و منابع لاتین '
           'اساساً مشمول پاورقی اصطلاح نیستند و دست‌نخورده مانده‌اند.',
-          '- کدهای ابزار در جدول ۳-۱ برای شفافیت حفظ شده‌اند (استثنای فاز ۳ مأموریت)؛ '
-          'همچنین «(PROCESS)»، «(PROCESS Model 4)» و «(PROCESS, Model 4)» نام رسمی '
-          'نرم‌افزار/الگویند و در متن می‌مانند.',
+          '- کدهای ابزار در جدول ۳-۱ برای شفافیت حفظ شده‌اند (استثنای فاز ۳ مأموریت ۴۵).',
+          '- مأموریت ۴۶: «(PROCESS)» و «(PROCESS Model 4)» در نخستین کاربرد (پس از واژهٔ «پراسس» در '
+          'فصل دوم) پاورقیِ واحد «PROCESS macro (Hayes)» گرفتند و «(PROCESS, Model 4)» در فصل سوم '
+          'به‌صورت فارسیِ بدون پرانتز درآمد؛ «(YSQ–L3)» و «(5-HTTLPR)» هم یک‌بار پاورقی '
+          'گرفتند (متن پاورقی = همان لاتینِ خودِ سند؛ چیزی از بیرون افزوده نشده).',
+          '- ستون «اصطلاح فارسی» مرزِ اصلاح‌شدۀ اصطلاح است (بند ۳ فاز ۱)؛ پاورقی همیشه بعد از '
+          'آخرین واژهٔ اصطلاح نشسته است.',
           '- شمارهٔ پاورقی در ستون آخر، شناسۀ ترتیب ساخت در FootnoteMaster است؛ شمارۀ '
           'نمایشِ Word به‌ترتیب ظهور در هر صفحه (restart هر صفحه) محاسبه می‌شود.',
           '']
