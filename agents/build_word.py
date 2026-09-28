@@ -9,6 +9,10 @@
 - حذف همهٔ صفات theme فونت از styles.xml (docDefaults و استایل‌ها)
 - پاورقی لاتین نام نویسندگان خارجی در اولین استناد (املای لاتین فقط از فهرست منابع)
 - شماره‌گذاری پاورقی در هر صفحه از ۱ (footnotePr/numRestart=eachPage) + اعداد فارسی (numFmt=hindi)
+مأموریت ۴۵: معادل انگلیسی اصطلاحات فقط در اولین کاربرد در کل سند (مقدماتی←فصل۱←۲←۳)
+به پاورقی می‌رود؛ کاربردهای بعدی (از جمله تیترها) پاک‌سازی می‌شوند. واحدهای ابزار
+(STAI-Y2/YSQ-SF/GL-RTS) یک پاورقی سراسری با نام کامل+کد می‌گیرند؛ جدول‌ها استثنا هستند؛
+نام نرم‌افزارها (SPSS/Amos/PROCESS/…) در متن می‌مانند.
 ورودی:  output/drafts/chapter1.md، chapter2_full.md، chapter3_full.md
 خروجی:  output/final/thesis_ch1_to_ch3.docx + data/processed/citation_latin_map.md
 """
@@ -133,6 +137,65 @@ NARRATIVE_NAMES = [
     ('آلبرت الیس', 'Albert Ellis'),
     ('رولو می', 'Rollo May'),
 ]
+
+
+# ------------------------- قانون مأموریت ۴۵: اصطلاح/ابزار -------------------------
+# نام نرم‌افزارها به‌عنوان نام رسمی، پاورقی اصطلاح نمی‌گیرند و در متن می‌مانند:
+SOFTWARE_ONLY = {'SPSS', 'AMOS', 'PROCESS', 'LISREL', 'MPLUS', 'MAXQDA', 'MATLAB',
+                 'EXCEL', 'PYTHON', 'NVIVO', 'R'}
+
+# واحدهای ابزار: (کلید، متن پاورقی، [واژۀ داخل پرانتز که به همین واحد تعلق دارد])
+# املای لاتین صرفاً از متن خودِ پایان‌نامه/راهنما برداشته شده است.
+INSTRUMENTS = [
+    ('STAI-Y2', 'State-Trait Anxiety Inventory, Form Y-2 (STAI-Y2)',
+     ('STAI-Y2', 'STAI', 'Y-2', 'Form Y-2',
+      'Spielberger State-Trait Anxiety Inventory',
+      'State-Trait Anxiety Inventory, Form Y-2')),
+    ('YSQ-SF', 'Young Schema Questionnaire – Short Form (YSQ-SF)',
+     ('YSQ-SF', 'Young Schema Questionnaire – Short Form',
+      'Young Schema Questionnaire - Short Form')),
+    ('GL-RTS', 'Financial Risk Tolerance Scale (GL-RTS)',
+     ('GL-RTS', 'Financial Risk Tolerance Scale')),
+]
+
+
+def _instr_pat(v):
+    body = re.escape(v).replace('\u2013', '[-\u2013\u2014]')
+    return re.compile(r'\(' + body + r'\)')
+
+
+INSTR_UNITS = [(name, note, [_instr_pat(v) for v in vs]) for name, note, vs in INSTRUMENTS]
+INSTR_BY_NAME = {name: pats for name, _, pats in INSTR_UNITS}
+INSTR_NOTES = {name: note for name, note, _ in INSTRUMENTS}
+INSTR_WINDOW = 60  # فاصلهٔ کاراکتری برای ادغام چند پرانتزِ هم‌واحد در یک سطر
+
+CH_LABELS = ('فصل اول', 'فصل دوم', 'فصل سوم')
+
+
+def instr_spans(line):
+    """همۀ پرانتزهای ابزار در یک سطر: فهرست (start, end, unit)."""
+    out = []
+    for name, _, pats in INSTR_UNITS:
+        for p in pats:
+            for m in p.finditer(line):
+                out.append((m.start(), m.end(), name))
+    return out
+
+
+def _persian_phrase(line, pos):
+    """«عبارت فارسیِ پیش از پرانتز» برای ستون رجیستری؛ تا ۵ واژۀ پشت‌سرهم."""
+    tail = re.sub(r'\*\*.+?\*\*\s*', ' ', line[:pos])
+    words = [w.strip('.:،؛)!؟«»()[]') for w in re.split(r'\s+', tail.rstrip())]
+    stop = {'از', 'به', 'در', 'با', 'که', 'است', 'را', 'این', 'خود', 'و', 'یا', 'نیز', 'هم', 'می'}
+    phrase = []
+    for w in reversed(words):
+        if re.fullmatch(r'[\u0600-\u06FF\u200c\u0654\u06C0\u06C9]+', w) and w not in stop:
+            phrase.insert(0, w)
+        else:
+            break
+        if len(phrase) >= 5:
+            break
+    return ' '.join(phrase)
 
 
 def chapter_title_from_h1(text):
@@ -522,6 +585,12 @@ class FootnoteMaster:
         self.not_found = {}          # استناد بدون تطبیق -> شمار
         self.author_notes = 0
         self.term_notes = 0
+        # ---- مأموریت ۴۵ ----
+        self.instr_first = {}        # واحد -> fid پاورقی
+        self.instr_line = {}         # واحد -> (ch, line) نخستین رخداد (پس از مصرف None)
+        self.instr_removed = {}      # واحد -> شمار پاک‌سازی‌های بعدی
+        self.term_removed = {}       # term_key -> شمار پاک‌سازی‌های بعدی
+        self.registry = []           # ردیف‌های رجیستریِ گزارش‌ساز
 
     # ---------- اصطلاح‌ها ----------
     @staticmethod
@@ -539,20 +608,46 @@ class FootnoteMaster:
         return re.sub(r'\s+', ' ', content.split(';')[0]).strip().lower()
 
     def scan_terms(self, chapters):
+        # رجیستری سراسری به ترتیب واقعی سند؛ تیترها هم بررسی می‌شوند (مأموریت ۴۵)
         for ch_idx, lines in enumerate(chapters):
             for ln_no, line in enumerate(lines):
                 kind = _line_kind(line)
-                if kind in ('table', 'fence', 'ref', 'blank', 'h'):
+                if kind in ('table', 'fence', 'ref', 'blank'):
                     continue
+                ispan = instr_spans(line)
+                # واحدهای ابزار: نخستین occurrence در کل سند یک پاورقی می‌گیرد
+                for name, note, _ in INSTRUMENTS:
+                    if name in self.instr_first:
+                        continue
+                    mine = [s for s in ispan if s[2] == name]
+                    if not mine:
+                        continue
+                    self.entries.append(note)
+                    self.instr_first[name] = len(self.entries)
+                    self.instr_line[name] = (ch_idx, ln_no)
+                    self.instr_removed[name] = 0
+                    first_pos = min(s[0] for s in mine)
+                    self.registry.append(dict(
+                        kind='B-کد ابزار', fa=_persian_phrase(line, first_pos),
+                        en=note, ch=ch_idx, ln=ln_no, fid=self.instr_first[name],
+                        key='__instr__' + name))
                 for m in self.ELIG_RE.finditer(line):
                     c = m.group(1)
                     if not self.term_eligible(c) or not _persian_before(line, m.start()):
                         continue
+                    if c.strip().upper() in SOFTWARE_ONLY:
+                        continue        # نام رسمی نرم‌افزار: بدون پاورقی
+                    if any(s <= m.start() < e for s, e, _ in ispan):
+                        continue        # این پرانتز متعلق به واحد ابزار است
                     k = self.term_key(c)
                     if k not in self.term_keys:
                         self.entries.append(c.strip())
                         self.term_keys[k] = (len(self.entries), ch_idx, ln_no)
                         self.term_notes += 1
+                        self.registry.append(dict(
+                            kind='A-معادل اصطلاح', fa=_persian_phrase(line, m.start()),
+                            en=c.strip(), ch=ch_idx, ln=ln_no, fid=len(self.entries),
+                            key=k))
 
     # ---------- نویسندگان ----------
     def lookup_author(self, raw_name, year):
@@ -570,15 +665,20 @@ class FootnoteMaster:
     # ---------- تبدیل خط ----------
     def transform_line(self, line, ch_idx, ln_no):
         kind = _line_kind(line)
-        # تیترها دست‌نخورده می‌مانند: بدون پاورقی و بدون حذف پرانتز اصطلاح —
-        # متن تیتر باید عیناً (شامل واژهٔ لاتین داخل پرانتز) رندر شود.
-        if kind in ('table', 'fence', 'ref', 'blank', 'h'):
+        # مأموریت ۴۵: تیترها هم مشمول پاک‌سازی‌اند؛ پرانتز لاتین از تیتر حذف می‌شود و
+        # پاورقی (فقط اگر نخستین کاربرد سراسری همان‌جا باشد) به تیتر وصل می‌شود.
+        if kind in ('table', 'fence', 'ref', 'blank'):
             return line
         out, last = [], 0
-        # ترکیب هر سه الگو در یک گذر؛ ترتیب اولویت با موقعیت در خط تعیین می‌شود
+        # ترکیب همۀ الگوها در یک گذر؛ ترتیب اولویت با موقعیت در خط تعیین می‌شود
+        # (در تساویِ موقعیت، الگوی ابزار زودتر افزوده می‌شود تا برندهٔ پایدارِ sort باشد)
         matches = []
         for m in self.PAR_CITE.finditer(line):
             matches.append(('par', m))
+        for uname, _, upats in INSTR_UNITS:
+            for p in upats:
+                for m in p.finditer(line):
+                    matches.append(('instr', m, uname))
         for m in self.ELIG_RE.finditer(line):
             matches.append(('term', m))
         for m in self.NAR_CITE.finditer(line):
@@ -600,7 +700,9 @@ class FootnoteMaster:
             if any(s <= m.start() < e or s < m.end() <= e for s, e in taken):
                 continue
             taken.append((m.start(), m.end()))
-            if tag == 'term':
+            if tag == 'instr':
+                last = self._do_instr(line, m, item[2], ch_idx, ln_no, kind, out, last, taken)
+            elif tag == 'term':
                 last = self._do_term(line, m, ch_idx, ln_no, kind, out, last)
             elif tag == 'par':
                 last = self._do_par_cite(line, m, kind, out, last)
@@ -627,16 +729,22 @@ class FootnoteMaster:
         content = m.group(1)
         if not self.term_eligible(content):
             return last
+        if content.strip().upper() in SOFTWARE_ONLY:
+            return last        # نام رسمی نرم‌افزار: بدون پاورقی، عیناً در متن می‌ماند
         key = self.term_key(content)
         reg = self.term_keys.get(key)
         if reg is not None:
             fid, fch, fln = reg
-            if (fch, fln) == (ch_idx, ln_no) and kind in ('p', 'bullet'):
-                out.append(line[last:m.start()])
+            if (fch, fln) == (ch_idx, ln_no) and kind in ('p', 'bullet', 'h'):
+                out.append(line[last:m.start()].rstrip(' '))
                 out.append(FN_TOKEN.format(fid))
+                # نشانگرِ این سطر مصرف می‌شود تا پاورقیِ همان اصطلاح در سطرهای بعدی
+                # (و تکرارِ همین اصطلاح در همین سطر) یکتا بماند
+                self.term_keys[key] = (fid, fch, -1)
             else:
                 out.append(line[last:m.start()].rstrip(' '))
                 self.removed_later += 1
+                self.term_removed[key] = self.term_removed.get(key, 0) + 1
             return m.end()
         first_word = re.sub(r'[^a-z]', '', content.split()[0].lower()) \
             if content.split() else ''
@@ -648,6 +756,36 @@ class FootnoteMaster:
             return m.end()
         self.left_intact.add(content)
         return last
+
+    def _do_instr(self, line, m, unit, ch_idx, ln_no, kind, out, last, taken):
+        """واحد ابزار: نخستین رخداد سراسری یک پاورقی یکتا می‌گیرد و پرانتزهای
+        هم‌واحدِ نزدیک (پنجرۀ ۶۰تایی) در همان سطر ادغام می‌شوند؛ هر کاربرد بعدی
+        صرفاً حذف پرانتز است — بدون پاورقی جدید (مأموریت ۴۵)."""
+        pats = INSTR_BY_NAME[unit]
+        pairs = sorted({(mm.start(), mm.end()) for p in pats for mm in p.finditer(line)})
+        is_first = self.instr_line.get(unit) == (ch_idx, ln_no)
+        if is_first:
+            self.instr_line[unit] = None      # مصرف نشانۀ نخستین کاربرد
+            grp = [(m.start(), m.end())]
+            while True:
+                nxt = [sp for sp in pairs if sp[0] >= grp[-1][1]
+                       and sp[0] - grp[-1][1] <= INSTR_WINDOW]
+                if not nxt:
+                    break
+                grp.append(nxt[0])
+            if kind in ('p', 'bullet', 'h'):
+                for s, e in grp:
+                    taken.append((s, e))
+                cur = last
+                for s, e in grp[:-1]:
+                    out.append(line[cur:s].rstrip(' '))
+                    cur = e
+                out.append(line[cur:grp[-1][0]].rstrip(' '))
+                out.append(FN_TOKEN.format(self.instr_first[unit]))
+                return grp[-1][1]
+        out.append(line[last:m.start()].rstrip(' '))
+        self.instr_removed[unit] = self.instr_removed.get(unit, 0) + 1
+        return m.end()
 
     def _do_par_cite(self, line, m, kind, out, last):
         if kind not in ('p', 'bullet'):
@@ -1242,6 +1380,45 @@ def write_citation_map(master, ref_index):
     MAP_PATH.write_text('\n'.join(lines) + '\n', encoding='utf-8')
 
 
+REGISTRY_PATH = ROOT / 'data/processed/english_term_first_occurrence_registry.md'
+
+
+def write_term_registry(master):
+    """رجیستری «اولین کاربرد سراسری» — خروجی گزارش فاز ۲ مأموریت ۴۵."""
+    rows = sorted(master.registry, key=lambda r: r['fid'])
+    L = ['# رجیستری اولین کاربرد سراسریِ معادل‌های انگلیسی (مأموریت ۴۵)',
+         '',
+         'مبنا: ترتیب واقعی سند Word — صفحات مقدماتی (چکیده/کلمات کلیدی: فاقد هرگونه '
+         'پرانتز لاتین، بنابراین نخستین کاربرد در همان فصل‌هاست) ← فصل اول ← فصل دوم ← '
+         'فصل سوم ← منابع. هر اصطلاح فقط در نخستین کاربرد پاورقی می‌گیرد؛ همهٔ کاربردهای '
+         'بعدی (متن، بولد و تیترها) پاک‌سازی می‌شوند. استناد/آمار/DOI/نرم‌افزار استثنا هستند.',
+         '',
+         '| اصطلاح فارسی | معادل انگلیسی | اولین محل | نوع | پاورقی ساخته شد؟ | کاربردهای بعدی پاک‌سازی شد؟ |',
+         '|---|---|---|---|---|---|']
+    for r in rows:
+        if r['key'].startswith('__instr__'):
+            rem = master.instr_removed.get(r['key'][10:], 0)
+        else:
+            rem = master.term_removed.get(r['key'], 0)
+        rem_txt = f'بله ({rem} کاربرد بعدی)' if rem else 'کاربرد بعدی نداشت'
+        L.append(f"| {r['fa'] or '—'} | {r['en']} | {CH_LABELS[r['ch']]}، سطر {r['ln'] + 1} | "
+                 f"{r['kind']} | بله (پاورقی {r['fid']}) | {rem_txt} |")
+    L += ['',
+          '## یادداشت‌ها',
+          '',
+          '- شمارهٔ سطر، سطر فایل md در بدنهٔ فصل (پیش از بخش «## منابع») است.',
+          '- استنادهای درون‌متنی (مثل «(بک، ۱۹۷۶)»)، عبارت‌های آماری/فرمولی '
+          '(مثل «(r = .276, p < .001)» و «(a×b)» و «(P<0.05)»)، DOI/URL و منابع لاتین '
+          'اساساً مشمول پاورقی اصطلاح نیستند و دست‌نخورده مانده‌اند.',
+          '- کدهای ابزار در جدول ۳-۱ برای شفافیت حفظ شده‌اند (استثنای فاز ۳ مأموریت)؛ '
+          'همچنین «(PROCESS)»، «(PROCESS Model 4)» و «(PROCESS, Model 4)» نام رسمی '
+          'نرم‌افزار/الگویند و در متن می‌مانند.',
+          '- شمارهٔ پاورقی در ستون آخر، شناسۀ ترتیب ساخت در FootnoteMaster است؛ شمارۀ '
+          'نمایشِ Word به‌ترتیب ظهور در هر صفحه (restart هر صفحه) محاسبه می‌شود.',
+          '']
+    REGISTRY_PATH.write_text('\n'.join(L), encoding='utf-8')
+
+
 def main():
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     raw = [(k, p, p.read_text(encoding='utf-8')) for k, p in CH_SOURCES]
@@ -1297,6 +1474,7 @@ def main():
                  if re.match(r'[A-Za-z]', e.strip())]
     attach_footnotes_part(doc, master)
     write_citation_map(master, ref_index)
+    write_term_registry(master)
     assert_heading_layout(doc)
     doc.save(OUT_PATH)
 
@@ -1307,6 +1485,9 @@ def main():
           f' | پاورقی نام روایی: {master.name_notes}'
           f' | مجموع: {len(master.entries)} | تکراری پاک‌شده: {master.removed_later}')
     print('NOT_FOUND:', sorted(master.not_found.items()) or 'هیچ')
+    print(f'پاورقی ابزار (B): {len(master.instr_first)} واحد | پاک‌سازی بعدیِ معادل (A): '
+          f'{master.removed_later} | پاک‌سازی بعدیِ کد ابزار (B): '
+          f'{sum(master.instr_removed.values())} | رجیستری: {REGISTRY_PATH.name}')
     print(f'اصلاح پرانتز تایپی: {PAREN_TYPO_STATS} | همزه: {HAMZA_STATS["removed_0654"]} حذف‌شده (U+0654) + '
           f'{HAMZA_STATS["replaced_06C0"]} تبدیل «ۀ» به «ه» (U+06C0)')
     for a, b in flagged:
