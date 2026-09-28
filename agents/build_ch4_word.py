@@ -142,6 +142,10 @@ def build(md_path=MD_PATH, fig_path=FIG_PATH, out_path=OUT_PATH):
         if line.startswith('!['):
             doc.add_picture(str(fig_path), width=Cm(14))
             doc.paragraphs[-1].alignment = WD_ALIGN_PARAGRAPH.CENTER
+            # کپشن می‌تواند از قبل در pending باشد یا در سطر بعد از تصویر بیاید
+            if not pending_fig_caption and i < len(lines) and lines[i].strip().startswith('**شکل'):
+                pending_fig_caption = lines[i].strip()
+                i += 1
             if pending_fig_caption:
                 par = base_paragraph(doc, WD_ALIGN_PARAGRAPH.CENTER, 3, 6)
                 add_md_rich(par, pending_fig_caption, fa_pt=TABLE_FONT_PT, en_pt=10)
