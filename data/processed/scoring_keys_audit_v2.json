@@ -1,0 +1,500 @@
+{
+  "meta": {
+    "title": "Independent audit of PR36 scoring keys vs user questionnaire form",
+    "version": "2.0",
+    "date": "2026-10-03",
+    "branch": "feat/official-scoring-keys",
+    "method": "item-by-item extraction from questionnaire_source.docx; comparison with registered keys; web-sourced evidence; no memory-based claims",
+    "path_note": "Mission-listed data/processed/official_scoring_keys.json and root spss_scoring_syntax.sps do not exist; audited actuals: data/scoring_sources/official_scoring_keys.json, data/processed/spss_scoring_syntax.sps, data/processed/scoring_plan_official.md"
+  },
+  "STAI_Y2": {
+    "status": "NEEDS_USER_OR_SUPERVISOR_CONFIRMATION",
+    "form_items": 20,
+    "form_scale": "Likert 1-4 (taqriban hargiz .. taqriban hamishe)",
+    "registered_key": {
+      "direct": [
+        2,
+        3,
+        4,
+        5,
+        8,
+        9,
+        11,
+        12,
+        14,
+        15,
+        17,
+        18,
+        20
+      ],
+      "reversed": [
+        1,
+        6,
+        7,
+        10,
+        13,
+        16,
+        19
+      ],
+      "range": [
+        20,
+        80
+      ]
+    },
+    "standard_Y2_reversed_global": [
+      21,
+      23,
+      26,
+      27,
+      30,
+      33,
+      34,
+      36,
+      39
+    ],
+    "standard_Y2_reversed_relative": [
+      1,
+      3,
+      6,
+      7,
+      10,
+      13,
+      14,
+      16,
+      19
+    ],
+    "form_consistent_key": {
+      "direct": [
+        2,
+        3,
+        4,
+        5,
+        8,
+        9,
+        11,
+        12,
+        15,
+        17,
+        18,
+        20
+      ],
+      "reversed": [
+        1,
+        6,
+        7,
+        10,
+        13,
+        14,
+        16,
+        19
+      ],
+      "range": [
+        20,
+        80
+      ]
+    },
+    "key_difference": "Item 14 (be asani tasmim migiram = standard anxiety-absent 'I make decisions easily') must be reversed; registered key scores it direct. Item 3 differs in text from standard (crying vs satisfied-with-self) so the form is an independent Persian version.",
+    "persian_source": "Besharat et al. 1395 (unlocatable from execution environment; ch2 audit: pending)"
+  },
+  "YSQ_SF": {
+    "status": "VERIFIED_BUT_VERSION_MISMATCH",
+    "form_items": 75,
+    "form_order": "block 15x5",
+    "registered_key_order": "rotation ((p-1) mod 15)+1",
+    "overlap_items": [
+      1,
+      19,
+      38,
+      57,
+      75
+    ],
+    "overlap_count": 5,
+    "form_consistent_mapping": {
+      "ED": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "AB": [
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "MA": [
+        11,
+        12,
+        13,
+        14,
+        15
+      ],
+      "SI": [
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "DS": [
+        21,
+        22,
+        23,
+        24,
+        25
+      ],
+      "FA": [
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "DI": [
+        31,
+        32,
+        33,
+        34,
+        35
+      ],
+      "VH": [
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "EM": [
+        41,
+        42,
+        43,
+        44,
+        45
+      ],
+      "SU": [
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "SS": [
+        51,
+        52,
+        53,
+        54,
+        55
+      ],
+      "EI": [
+        56,
+        57,
+        58,
+        59,
+        60
+      ],
+      "US": [
+        61,
+        62,
+        63,
+        64,
+        65
+      ],
+      "ET": [
+        66,
+        67,
+        68,
+        69,
+        70
+      ],
+      "IS": [
+        71,
+        72,
+        73,
+        74,
+        75
+      ]
+    },
+    "subscale_range": [
+      5,
+      30
+    ],
+    "total_range": [
+      75,
+      450
+    ],
+    "domains_from_table2_1": {
+      "D1_Disconnection_Rejection": {
+        "subscales": [
+          "AB",
+          "MA",
+          "ED",
+          "DS",
+          "SI"
+        ],
+        "items": 25,
+        "form_items": [
+          1,
+          25
+        ]
+      },
+      "D2_Impaired_Autonomy": {
+        "subscales": [
+          "FA",
+          "DI",
+          "VH",
+          "EM"
+        ],
+        "items": 20,
+        "form_items": [
+          26,
+          45
+        ]
+      },
+      "D3_Impaired_Limits": {
+        "subscales": [
+          "ET",
+          "IS"
+        ],
+        "items": 10,
+        "form_items": [
+          66,
+          75
+        ]
+      },
+      "D4_Other_Directedness": {
+        "subscales": [
+          "SU",
+          "SS"
+        ],
+        "note": "AS absent from YSQ-SF",
+        "items": 10,
+        "form_items": [
+          46,
+          55
+        ]
+      },
+      "D5_Overvigilance_Inhibition": {
+        "subscales": [
+          "EI",
+          "US"
+        ],
+        "note": "NP and PU absent from YSQ-SF",
+        "items": 10,
+        "form_items": [
+          56,
+          65
+        ]
+      }
+    },
+    "domain_items_sum": 75,
+    "persian_source": "Yoosefi 1396 (unlocatable from execution environment; ch2 audit: pending). Pre-existing open warning: scale-label direction in user file reversed vs proposal."
+  },
+  "Grable_Lytton": {
+    "status": "NEEDS_USER_OR_SUPERVISOR_CONFIRMATION",
+    "form_items": 13,
+    "form_structure": "all 13 questions with 4 options",
+    "reversed_by_content": [
+      1,
+      13
+    ],
+    "registered_key": {
+      "weights": "uniform 1-4, no reversals",
+      "range": [
+        13,
+        52
+      ]
+    },
+    "original_Grable_Lytton_1999_key": {
+      "Q1": [
+        4,
+        3,
+        2,
+        1
+      ],
+      "Q2": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "Q3": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "Q4": [
+        1,
+        2,
+        3
+      ],
+      "Q5": [
+        1,
+        2,
+        3
+      ],
+      "Q6": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "Q7": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "Q8": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "Q9": [
+        1,
+        3
+      ],
+      "Q10": [
+        1,
+        3
+      ],
+      "Q11": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "Q12": [
+        1,
+        2,
+        3
+      ],
+      "Q13": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "maxima_sum": "4+4+4+3+3+4+4+4+3+3+4+3+4=47",
+      "range": [
+        13,
+        47
+      ]
+    },
+    "content_overlap_with_original": "only Q1, Q2, Q5 match; 10 questions localized/different",
+    "proposal_13_45": "assertion only (proposal_text.md L132), no computational key; inconsistent with form, original key, and registered key",
+    "form_structural_range": [
+      13,
+      52
+    ],
+    "form_structural_range_condition": "only if every question scored 1-4 with Q1 and Q13 reversed (5-x); reversal unsourced, needs supervisor decision",
+    "persian_source": "Talebi et al. 1398 (unlocatable from execution environment; ch2 audit: pending) => Persian per-item weights SOURCE_INSUFFICIENT"
+  },
+  "SPSS_findings_report_only": [
+    {
+      "id": "F1",
+      "file": "data/processed/spss_scoring_syntax.sps",
+      "lines": "8,12-13",
+      "type": "missing reversal (STAI)",
+      "detail": "A14 summed direct; form+standard evidence requires A14R"
+    },
+    {
+      "id": "F2",
+      "file": "data/processed/spss_scoring_syntax.sps",
+      "lines": "19-33",
+      "type": "wrong subscale mapping (YSQ)",
+      "detail": "all 15 COMPUTEs use rotation numbers; block form needs S_ED=1-5 ... S_IS=71-75"
+    },
+    {
+      "id": "F3",
+      "file": "data/processed/spss_scoring_syntax.sps",
+      "lines": "37",
+      "type": "OK",
+      "detail": "YSQ_Total sums all 75, mapping-independent"
+    },
+    {
+      "id": "F4",
+      "file": "data/processed/spss_scoring_syntax.sps",
+      "lines": "43",
+      "type": "unreversed items (Grable)",
+      "detail": "R01 and R13 summed raw; form content requires reversal pending supervisor sign-off"
+    },
+    {
+      "id": "F5",
+      "file": "data/processed/scoring_plan_official.md + official_scoring_keys.json",
+      "lines": "guide L10,L17,L21-41",
+      "type": "propagated",
+      "detail": "same three discrepancies present in guide and JSON key"
+    }
+  ],
+  "sources": [
+    {
+      "code": "S0",
+      "ref": "questionnaire_source.docx (user form) + questionnaire_source_text.md",
+      "type": "project primary for item text",
+      "mode": "direct XML extraction"
+    },
+    {
+      "code": "S1",
+      "ref": "STAI Form Y psychometrics, MDPI Sustainability 2018 10(9)3311, sect 2.2",
+      "type": "journal article",
+      "mode": "secondary (key from Spielberger 1983)",
+      "url": "https://www.mdpi.com/2071-1050/10/9/3311"
+    },
+    {
+      "code": "S2",
+      "ref": "STAI table, Frontiers data sheet 1706386",
+      "type": "data supplement",
+      "mode": "secondary corroboration (note has typo, not authoritative)",
+      "url": "https://public-pages-files-2025.frontiersin.org/articles/1706386/file/data_sheet_1.pdf/1706386_data-sheet_1/1"
+    },
+    {
+      "code": "S3",
+      "ref": "Northern Capital 13-Item Risk Tolerance Scale reprint, citing Grable & Lytton 1999, Financial Services Review 8, 163-181",
+      "type": "instrument reprint with scoring table",
+      "mode": "secondary-extracted (13 items + weights + range)",
+      "url": "https://team-treatment.squarespace.com/s/2019-12-31-Grable-Lytton-Risk-Assessment.pdf"
+    },
+    {
+      "code": "S4",
+      "ref": "Grable et al., 15-year retrospective (2015): Scores range from 13 to 47",
+      "type": "review article",
+      "mode": "secondary (range confirmation)",
+      "url": "https://openjournals.libs.uga.edu/fsr/article/download/3240/2875/9315"
+    },
+    {
+      "code": "S5",
+      "ref": "psychometrist.ir YSQ-SF 75-item page, citing Young & Brown 1994 (ED=1-5, AB=6-10, ...)",
+      "type": "questionnaire bank",
+      "mode": "secondary (block order of standard YSQ-SF)",
+      "url": "https://psychometrist.ir/Questionnaire/detail/553/"
+    },
+    {
+      "code": "S6",
+      "ref": "thesis Table 2-1 (thesis_ch1_to_ch3.docx), citing Young et al. 2003",
+      "type": "project document",
+      "mode": "domain membership of 18 schemas in 5 domains"
+    },
+    {
+      "code": "S7",
+      "ref": "proposal_text.md L132 + proposal_extended_text.md",
+      "type": "project document",
+      "mode": "origin of 13-45 claim + full Persian citations"
+    },
+    {
+      "code": "S8",
+      "ref": "chapter2_citations_audit.md L111-118",
+      "type": "project audit",
+      "mode": "all three Persian sources pending/unavailable"
+    }
+  ],
+  "required_decisions": [
+    "YSQ: replace rotation mapping with block mapping (JSON + guide + syntax)",
+    "STAI: add item 14 to reversed set (12/8 key)",
+    "Grable: supervisor ruling on Q1/Q13 reversal + official per-item weights from Talebi 1398 (else structural 13-52 stays conditional)",
+    "YSQ: reconcile printed scale-label direction with Yoosefi 1396 before Porsline launch (pre-existing open warning)"
+  ]
+}
