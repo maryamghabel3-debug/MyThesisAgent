@@ -31,7 +31,7 @@ def T(p):
 
 
 def run_el(text, font='B Nazanin', sz='24', bold=False, italic=False,
-           vanish=False):
+           vanish=False, rtl=False):
     r = ET.Element(W + 'r')
     rp = ET.SubElement(r, W + 'rPr')
     if vanish:
@@ -48,6 +48,8 @@ def run_el(text, font='B Nazanin', sz='24', bold=False, italic=False,
         ET.SubElement(rp, W + 'iCs')
     ET.SubElement(rp, W + 'sz').set(W + 'val', sz)
     ET.SubElement(rp, W + 'szCs').set(W + 'val', sz)
+    if rtl:
+        ET.SubElement(rp, W + 'rtl')
     t = ET.SubElement(r, W + 't')
     t.text = text
     if text != text.strip():
@@ -55,9 +57,12 @@ def run_el(text, font='B Nazanin', sz='24', bold=False, italic=False,
     return r
 
 
-def para_el(runs, jc=None, rtl=True, exact='580', after=None, outline=None):
+def para_el(runs, jc=None, rtl=True, exact='580', after=None, outline=None,
+            pstyle=None):
     p = ET.Element(W + 'p')
     pr = ET.SubElement(p, W + 'pPr')
+    if pstyle:
+        ET.SubElement(pr, W + 'pStyle').set(W + 'val', pstyle)
     if rtl:
         ET.SubElement(pr, W + 'bidi')
     if jc:
@@ -79,7 +84,9 @@ def para_el(runs, jc=None, rtl=True, exact='580', after=None, outline=None):
 def text_para(text, **kw):
     return para_el([run_el(text, font=kw.pop('font', 'B Nazanin'),
                            sz=kw.pop('sz', '24'),
-                           bold=kw.pop('bold', False))], **kw)
+                           bold=kw.pop('bold', False),
+                           rtl=kw.pop('rtl_run', False))],
+                   pstyle=kw.pop('pstyle', None), **kw)
 
 
 def page_break_para():
@@ -108,7 +115,11 @@ def fld_para(kind, instr):
     return p
 
 
-def toc_field_paras(instr, cache_texts):
+TOC_RUN_SZ = {'TOC1': '24', 'TOC2': '22', 'TOC3': '22',
+              'tableoffigures': '24'}
+
+
+def toc_field_paras(instr, entries):
     """TOC field: code para + cached title paras + end para."""
     out = []
     p = ET.Element(W + 'p')
@@ -124,8 +135,9 @@ def toc_field_paras(instr, cache_texts):
         else:
             ET.SubElement(r, W + 'instrText').text = tx
     out.append(p)
-    for t in cache_texts:
-        out.append(text_para(t, jc='both'))
+    for t, sid in entries:
+        out.append(text_para(t, jc='right', pstyle=sid,
+                             sz=TOC_RUN_SZ[sid], rtl_run=True))
     pe = ET.Element(W + 'p')
     ET.SubElement(ET.SubElement(pe, W + 'pPr'), W + 'bidi')
     re_ = ET.SubElement(pe, W + 'r')
@@ -182,6 +194,35 @@ def ref_para(text, fa):
                    jc='left', rtl=True)
 
 
+def rtl_toc_style(style_id, name, sz, tab_pos):
+    """Paragraph style keeping TOC/TOF entries RTL after F9 update."""
+    st = ET.Element(W + 'style')
+    st.set(W + 'type', 'paragraph')
+    st.set(W + 'styleId', style_id)
+    ET.SubElement(st, W + 'name').set(W + 'val', name)
+    ET.SubElement(st, W + 'basedOn').set(W + 'val', 'Normal')
+    ET.SubElement(st, W + 'next').set(W + 'val', 'Normal')
+    ET.SubElement(st, W + 'semiHidden')
+    ET.SubElement(st, W + 'unhideWhenUsed')
+    pr = ET.SubElement(st, W + 'pPr')
+    tabs = ET.SubElement(pr, W + 'tabs')
+    tab = ET.SubElement(tabs, W + 'tab')
+    tab.set(W + 'val', 'left')
+    tab.set(W + 'leader', 'dot')
+    tab.set(W + 'pos', str(tab_pos))
+    ET.SubElement(pr, W + 'jc').set(W + 'val', 'right')
+    ET.SubElement(pr, W + 'bidi').set(W + 'val', '1')
+    rp = ET.SubElement(st, W + 'rPr')
+    rf = ET.SubElement(rp, W + 'rFonts')
+    rf.set(W + 'ascii', 'Times New Roman')
+    rf.set(W + 'hAnsi', 'Times New Roman')
+    rf.set(W + 'cs', 'B Nazanin')
+    ET.SubElement(rp, W + 'sz').set(W + 'val', sz)
+    ET.SubElement(rp, W + 'szCs').set(W + 'val', sz)
+    ET.SubElement(rp, W + 'rtl')
+    return st
+
+
 def joint(footer_rid, numbered, restart=False):
     p = ET.Element(W + 'p')
     sp = ET.SubElement(ET.SubElement(p, W + 'pPr'), W + 'sectPr')
@@ -216,6 +257,24 @@ def main():
     assert 'PAGE' not in zb.read('word/footer1.xml').decode('utf8')
     assert 'PAGE' in zb.read('word/footer10.xml').decode('utf8')
     assert sect_final.find(W + 'headerReference') is None
+
+    # ---- RTL TOC/TOF styles (survive F9 update) ----
+    styles = ET.fromstring(zb.read('word/styles.xml'))
+    assert any(s.get(W + 'styleId') == 'Normal'
+               for s in styles.findall(W + 'style'))
+    for s in list(styles.findall(W + 'style')):
+        if s.get(W + 'styleId') in ('TOC1', 'TOC2', 'TOC3',
+                                    'tableoffigures'):
+            styles.remove(s)
+    pg = sect_final.find(W + 'pgSz')
+    pm = sect_final.find(W + 'pgMar')
+    tab_pos = (int(pg.get(W + 'w')) - int(pm.get(W + 'left'))
+               - int(pm.get(W + 'right')))
+    for sid, nm, sz in [('TOC1', 'toc 1', '24'),
+                        ('TOC2', 'toc 2', '22'),
+                        ('TOC3', 'toc 3', '22'),
+                        ('tableoffigures', 'Table of Figures', '24')]:
+        styles.append(rtl_toc_style(sid, nm, sz, tab_pos))
 
     # ---- slice thesis: ch1/ch2/ch3 body + old refs ----
     tparas = [(i, c) for i, c in enumerate(kids) if c.tag == W + 'p']
@@ -303,12 +362,12 @@ def main():
                     or t.startswith('فصل پنجم:')):
                 ET.SubElement(c.find(W + 'pPr'), W + 'outlineLvl').set(
                     W + 'val', '0')
-                toc_contents.append(t)
+                toc_contents.append((t, 'TOC1'))
                 n0 += 1
             elif re.match(r'^[۰-۹0-9]+-[۰-۹0-9]+', t):
                 ET.SubElement(c.find(W + 'pPr'), W + 'outlineLvl').set(
                     W + 'val', '1')
-                toc_contents.append(t)
+                toc_contents.append((t, 'TOC2'))
                 n1 += 1
             m = re.match(r'^(جدول|شکل) [۰-۹0-9]+-[۰-۹0-9]+\.', t)
             if m:
@@ -316,7 +375,8 @@ def main():
                 flag = 'T' if m.group(1) == 'جدول' else 'F'
                 blk.insert(blk.index(c) + 1,
                            fld_para(flag, f'TC "{t}" \\f {flag} \\l 1'))
-                (toc_tables if flag == 'T' else toc_figs).append(t)
+                (toc_tables if flag == 'T' else toc_figs).append(
+                    (t, 'tableoffigures'))
 
     # ---- unified refs ----
     seen, fa, la = set(), [], []
@@ -334,7 +394,7 @@ def main():
             *[ref_para(t, True) for t in fa],
             text_para('منابع لاتین', bold=True),
             *[ref_para(t, False) for t in la]]
-    toc_contents.append('منابع')
+    toc_contents.append(('منابع', 'TOC1'))
     n0 += 1
 
     # ---- front matter ----
@@ -499,7 +559,7 @@ def main():
     with zipfile.ZipFile(OUT, 'w', zipfile.ZIP_DEFLATED) as z:
         for n_ in zb.namelist():
             if n_ in ('word/document.xml', 'word/_rels/document.xml.rels',
-                      '[Content_Types].xml'):
+                      'word/styles.xml', '[Content_Types].xml'):
                 continue
             z.writestr(n_, zb.read(n_))
         z.writestr('word/document.xml',
@@ -508,6 +568,9 @@ def main():
         z.writestr('word/_rels/document.xml.rels',
                    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
                    + ET.tostring(rels, encoding='unicode'))
+        z.writestr('word/styles.xml',
+                   '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+                   + ET.tostring(styles, encoding='unicode'))
         z.writestr('[Content_Types].xml',
                    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
                    + ET.tostring(ct, encoding='unicode'))
@@ -515,7 +578,8 @@ def main():
     assert (nstrip, nw) == (3, 2), (nstrip, nw)
     assert (len(toc_tables), len(toc_figs)) == (11, 2), (len(toc_tables),
                                                          len(toc_figs))
-    print(f'stripped_empty_sect={nstrip} pinned={pinned} warnings={nw}')
+    print(f'stripped_empty_sect={nstrip} pinned={pinned} warnings={nw} '
+          f'toc_tab_pos={tab_pos}')
     print(f'outline_L0={n0} outline_L1={n1} toc_tables={len(toc_tables)} '
           f'toc_figs={len(toc_figs)}')
     print(f'refs_fa={len(fa)} refs_latin={len(la)}')
