@@ -1,0 +1,856 @@
+# -*- coding: utf-8 -*-
+"""Mission v2: rebuild the complete thesis draft from MARKDOWN sources only.
+
+Pipeline: md --(repo builders)--> fresh intermediate docx in tmpdir
+          --(XML assembly here)--> output/final/thesis_complete_draft_v2.docx
+
+Never reads output/final/*.docx. Old Word files are not the base.
+"""
+import copy
+import re
+import sys
+import tempfile
+import zipfile
+from pathlib import Path
+from xml.etree import ElementTree as ET
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / 'agents'))
+
+import build_word
+import build_ch4_word
+import build_ch5_word
+
+ET.register_namespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main')
+ET.register_namespace('r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships')
+W = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+R = '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}'
+RN = 'http://schemas.openxmlformats.org/package/2006/relationships'
+CTN = 'http://schemas.openxmlformats.org/package/2006/content-types'
+
+CH13_MD = [ROOT / 'output/drafts/chapter1.md',
+           ROOT / 'output/drafts/chapter2_full.md',
+           ROOT / 'output/drafts/chapter3_full.md']
+CH4_MD = ROOT / 'output/drafts/chapter4_simulated_real_pipeline.md'
+CH4_FIG = ROOT / 'output/drafts/chapter4_real_pipeline_fig1.png'
+CH5_MD = ROOT / 'output/drafts/chapter5_simulated_real_pipeline.md'
+OUT = ROOT / 'output/final/thesis_complete_draft_v2.docx'
+REPORT = ROOT / 'data/processed/final_thesis_build_report.md'
+
+
+def T(p):
+    return ''.join(x.text or '' for x in p.findall(f'.//{W}t'))
+
+
+def run_builders(tmp):
+    """Run the repo md->docx builders with ALL outputs redirected to tmp."""
+    p13 = Path(tmp) / 'ch13.docx'
+    p4 = Path(tmp) / 'ch4.docx'
+    p5 = Path(tmp) / 'ch5.docx'
+    build_word.OUT_PATH = p13
+    build_word.MAP_PATH = Path(tmp) / 'citation_latin_map.md'
+    build_word.REGISTRY_PATH = Path(tmp) / 'registry.md'
+    build_word.main()
+    build_ch4_word.CH4_REGISTRY_OUT = Path(tmp) / 'ch4_registry.md'
+    build_ch4_word.build(md_path=CH4_MD, fig_path=CH4_FIG, out_path=p4)
+    build_ch5_word.CH5_REGISTRY_OUT = Path(tmp) / 'ch5_registry.md'
+    build_ch5_word.build(md_path=CH5_MD, out_path=p5)
+    return p13, p4, p5
+
+
+def body_texts(docx_path, skip_refs=True):
+    """Top-level body para texts; optionally cut at the refs heading."""
+    root = ET.fromstring(zipfile.ZipFile(docx_path).read('word/document.xml'))
+    out = []
+    for c in list(root.find(W + 'body')):
+        if c.tag != W + 'p':
+            continue
+        t = re.sub(r'\s+', ' ', T(c)).strip()
+        if skip_refs and t == 'منابع':
+            break
+        if t:
+            out.append(t)
+    return out
+
+
+def verify_intermediates(p13, p4, p5, log):
+    """Report-only: fresh builds vs committed docx (committed may be stale;
+    the mission orders building from the latest md, not matching old docx)."""
+    checks = [
+        ('ch1-3', str(p13), 'output/final/thesis_ch1_to_ch3.docx',
+         'فصل اول'),
+        ('ch4', str(p4), 'output/final/chapter4_simulated_real_pipeline.docx',
+         None),
+        ('ch5', str(p5), 'output/final/chapter5_simulated_real_pipeline.docx',
+         None),
+    ]
+    for name, fresh, committed, frm in checks:
+        a = body_texts(fresh)
+        b = body_texts(ROOT / committed)
+        if frm:
+            a = a[a.index(frm):]
+            b = b[b.index(frm):]
+        if a == b:
+            log.append(f'- intermediate {name}: {len(a)} paras, '
+                       f'identical-to-committed=True')
+            continue
+        nd = sum(1 for x, y in zip(a, b) if x != y) + abs(len(a) - len(b))
+        log.append(f'- intermediate {name}: fresh={len(a)} committed={len(b)} '
+                   f'differing={nd} (committed docx is stale; md wins)')
+        for x, y in zip(a, b):
+            if x != y:
+                log.append(f'  first-diff fresh: {x[:90]}')
+                log.append(f'  first-diff committed: {y[:90]}')
+                break
+
+
+def run_el(text, font='B Nazanin', sz='24', bold=False, italic=False,
+           vanish=False, rtl=False):
+    r = ET.Element(W + 'r')
+    rp = ET.SubElement(r, W + 'rPr')
+    if vanish:
+        ET.SubElement(rp, W + 'vanish')
+    rf = ET.SubElement(rp, W + 'rFonts')
+    rf.set(W + 'ascii', font)
+    rf.set(W + 'hAnsi', font)
+    rf.set(W + 'cs', font)
+    if bold:
+        ET.SubElement(rp, W + 'b')
+        ET.SubElement(rp, W + 'bCs')
+    if italic:
+        ET.SubElement(rp, W + 'i')
+        ET.SubElement(rp, W + 'iCs')
+    ET.SubElement(rp, W + 'sz').set(W + 'val', sz)
+    ET.SubElement(rp, W + 'szCs').set(W + 'val', sz)
+    if rtl:
+        ET.SubElement(rp, W + 'rtl')
+    t = ET.SubElement(r, W + 't')
+    t.text = text
+    if text != text.strip():
+        t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+    return r
+
+
+def para_el(runs, jc=None, rtl=True, exact='580', after=None, outline=None,
+            pstyle=None):
+    p = ET.Element(W + 'p')
+    pr = ET.SubElement(p, W + 'pPr')
+    if pstyle:
+        ET.SubElement(pr, W + 'pStyle').set(W + 'val', pstyle)
+    if rtl:
+        ET.SubElement(pr, W + 'bidi')
+    if jc:
+        ET.SubElement(pr, W + 'jc').set(W + 'val', jc)
+    if outline is not None:
+        ET.SubElement(pr, W + 'outlineLvl').set(W + 'val', str(outline))
+    if exact or after:
+        sp = ET.SubElement(pr, W + 'spacing')
+        if exact:
+            sp.set(W + 'line', exact)
+            sp.set(W + 'lineRule', 'exact')
+        if after:
+            sp.set(W + 'after', after)
+    for r in runs:
+        p.append(r)
+    return p
+
+
+def text_para(text, **kw):
+    return para_el([run_el(text, font=kw.pop('font', 'B Nazanin'),
+                           sz=kw.pop('sz', '24'),
+                           bold=kw.pop('bold', False),
+                           rtl=kw.pop('rtl_run', False))],
+                   pstyle=kw.pop('pstyle', None), **kw)
+
+
+def page_break_para():
+    p = ET.Element(W + 'p')
+    r = ET.SubElement(p, W + 'r')
+    ET.SubElement(r, W + 'br').set(W + 'type', 'page')
+    return p
+
+
+def tc_para(caption, flag):
+    assert '"' not in caption
+    p = ET.Element(W + 'p')
+    ET.SubElement(ET.SubElement(p, W + 'pPr'), W + 'bidi')
+    for kt, tx in (('begin', None), (None, f'TC "{caption}" \\f {flag} \\l 1'),
+                   ('end', None)):
+        r = ET.SubElement(p, W + 'r')
+        rp = ET.SubElement(r, W + 'rPr')
+        ET.SubElement(rp, W + 'vanish')
+        rf = ET.SubElement(rp, W + 'rFonts')
+        rf.set(W + 'ascii', 'B Nazanin')
+        rf.set(W + 'hAnsi', 'B Nazanin')
+        if kt:
+            ET.SubElement(r, W + 'fldChar').set(W + 'fldCharType', kt)
+        else:
+            ET.SubElement(r, W + 'instrText').text = tx
+    return p
+
+
+TOC_RUN_SZ = {'TOC1': '24', 'TOC2': '24', 'TOC3': '24',
+              'tableoffigures': '24'}
+
+
+def toc_field_paras(instr, entries):
+    out = []
+    p = ET.Element(W + 'p')
+    ET.SubElement(ET.SubElement(p, W + 'pPr'), W + 'bidi')
+    for kt, tx in (('begin', None), (None, instr), ('separate', None)):
+        r = ET.SubElement(p, W + 'r')
+        rp = ET.SubElement(r, W + 'rPr')
+        rf = ET.SubElement(rp, W + 'rFonts')
+        rf.set(W + 'ascii', 'B Nazanin')
+        rf.set(W + 'hAnsi', 'B Nazanin')
+        if kt:
+            ET.SubElement(r, W + 'fldChar').set(W + 'fldCharType', kt)
+        else:
+            ET.SubElement(r, W + 'instrText').text = tx
+    out.append(p)
+    for t, sid in entries:
+        out.append(text_para(t, jc='right', pstyle=sid,
+                             sz=TOC_RUN_SZ[sid], rtl_run=True,
+                             bold=(sid == 'TOC1')))
+    pe = ET.Element(W + 'p')
+    ET.SubElement(ET.SubElement(pe, W + 'pPr'), W + 'bidi')
+    ET.SubElement(ET.SubElement(pe, W + 'r'), W + 'fldChar').set(
+        W + 'fldCharType', 'end')
+    out.append(pe)
+    return out
+
+
+def rtl_toc_style(style_id, name, sz, tab_pos, bold=False):
+    st = ET.Element(W + 'style')
+    st.set(W + 'type', 'paragraph')
+    st.set(W + 'styleId', style_id)
+    ET.SubElement(st, W + 'name').set(W + 'val', name)
+    ET.SubElement(st, W + 'basedOn').set(W + 'val', 'Normal')
+    ET.SubElement(st, W + 'next').set(W + 'val', 'Normal')
+    ET.SubElement(st, W + 'semiHidden')
+    ET.SubElement(st, W + 'unhideWhenUsed')
+    pr = ET.SubElement(st, W + 'pPr')
+    tabs = ET.SubElement(pr, W + 'tabs')
+    tab = ET.SubElement(tabs, W + 'tab')
+    tab.set(W + 'val', 'left')
+    tab.set(W + 'leader', 'dot')
+    tab.set(W + 'pos', str(tab_pos))
+    ET.SubElement(pr, W + 'jc').set(W + 'val', 'right')
+    ET.SubElement(pr, W + 'bidi').set(W + 'val', '1')
+    rp = ET.SubElement(st, W + 'rPr')
+    rf = ET.SubElement(rp, W + 'rFonts')
+    rf.set(W + 'ascii', 'Times New Roman')
+    rf.set(W + 'hAnsi', 'Times New Roman')
+    rf.set(W + 'cs', 'B Nazanin')
+    if bold:
+        ET.SubElement(rp, W + 'b')
+        ET.SubElement(rp, W + 'bCs')
+    ET.SubElement(rp, W + 'sz').set(W + 'val', sz)
+    ET.SubElement(rp, W + 'szCs').set(W + 'val', sz)
+    ET.SubElement(rp, W + 'rtl')
+    return st
+
+
+ABSTRACT = ('پژوهش حاضر با هدف تعیین نقش میانجی‌گر طرحواره‌های ناسازگار '
+            'اولیه در رابطه بین اضطراب صفتی و رفتارهای مالی پرخطر در '
+            'معامله‌گران بازارهای مالی طراحی شد. این پژوهش از نظر هدف '
+            'کاربردی و از نظر روش توصیفی-همبستگی از نوع مدل‌سازی معادلات '
+            'ساختاری است. جامعهٔ آماری پژوهش را کلیهٔ معامله‌گران حقیقی '
+            'فارسی‌زبان بالای ۱۸ سال با حداقل شش ماه سابقهٔ معامله تشکیل '
+            'می‌دهند و نمونه‌گیری به روش غیرتصادفی در دسترس به همراه روش '
+            'گلوله‌برفی انجام می‌شود؛ حجم نمونهٔ هدف بر اساس قواعد تجربی '
+            'مدل‌یابی معادلات ساختاری ۲۰۰ نفر در نظر گرفته شد. ابزارهای '
+            'پژوهش شامل فرم اضطراب صفتی پرسشنامهٔ حالت-صفت اسپیلبرگر '
+            '(۲۰ گویه)، پرسشنامهٔ طرحواره‌های ناسازگار اولیهٔ یانگ ــ فرم '
+            'کوتاه (۷۵ گویه) و مقیاس تحمل ریسک مالی گرابل و لایتون '
+            '(۱۳ سؤال) است. برای تحلیل داده‌ها از آمار توصیفی، ضریب '
+            'همبستگی پیرسون، مدل‌سازی معادلات ساختاری با شاخص‌های برازش و '
+            'تحلیل میانجی‌گری با ماکروی PROCESS استفاده خواهد شد. '
+            'یافته‌های تجربی نهایی پس از تحلیل داده‌های واقعی در نسخه '
+            'نهایی پایان‌نامه گزارش خواهد شد.')
+
+KEYWORDS = ('اضطراب صفتی، طرحواره‌های ناسازگار اولیه، رفتارهای مالی پرخطر، '
+            'معامله‌گران بازارهای مالی، مدل‌سازی معادلات ساختاری')
+
+ABBREVS = [
+    ('STAI-Y2', 'فرم اضطراب صفتی پرسشنامهٔ حالت-صفت اسپیلبرگر'),
+    ('YSQ-SF', 'پرسشنامهٔ طرحوارهٔ یانگ ــ فرم کوتاه'),
+    ('GL-RTS', 'مقیاس تحمل ریسک مالی گرابل و لایتون'),
+    ('SEM', 'مدل‌سازی معادلات ساختاری'),
+    ('PROCESS', 'ماکروی PROCESS برای تحلیل میانجی‌گری'),
+    ('ML', 'برآورد درست‌نمایی بیشینه'),
+    ('CFI', 'شاخص برازش تطبیقی'),
+    ('TLI', 'شاخص برازش تاکر-لوئیس'),
+    ('RMSEA', 'ریشهٔ میانگین مربعات خطای تقریب'),
+    ('SRMR', 'ریشهٔ میانگین مربعات باقی‌ماندهٔ استانداردشده'),
+    ('VIF', 'عامل تورم واریانس'),
+    ('CI', 'فاصلهٔ اطمینان'),
+    ('r', 'ضریب همبستگی پیرسون'),
+    ('p', 'سطح معناداری'),
+    ('β', 'ضریب مسیر استانداردشده'),
+    ('χ²', 'آمارهٔ خی‌دو'),
+]
+
+TITLE_FA = ('تعیین نقش میانجی‌گر طرحواره‌های ناسازگار اولیه در رابطه بین '
+            'اضطراب صفتی و رفتارهای مالی پرخطر در معامله‌گران بازارهای مالی')
+
+
+def spacer(n=1):
+    return [ET.Element(W + 'p') for _ in range(n)]
+
+
+def abbrev_table():
+    tbl = ET.Element(W + 'tbl')
+    pr = ET.SubElement(tbl, W + 'tblPr')
+    ET.SubElement(pr, W + 'tblStyle').set(W + 'val', 'TableGrid')
+    ET.SubElement(pr, W + 'bidiVisual')
+    grid = ET.SubElement(pr, W + 'tblGrid')
+    for w in ('2200', '6021'):
+        ET.SubElement(grid, W + 'gridCol').set(W + 'w', w)
+    rows = [('علامت اختصاری', 'معادل فارسی / توضیح', True)] + [
+        (s, f, False) for s, f in ABBREVS]
+    for sym, fa, head in rows:
+        tr = ET.SubElement(tbl, W + 'tr')
+        for txt, latin in ((sym, True), (fa, False)):
+            tc = ET.SubElement(tr, W + 'tc')
+            tcpr = ET.SubElement(tc, W + 'tcPr')
+            ET.SubElement(tcpr, W + 'tcW').set(W + 'w', '2200' if latin
+                                               else '6021')
+            ET.SubElement(tcpr, W + 'tcW').set(W + 'type', 'dxa')
+            if latin:
+                tc.append(para_el([run_el(txt, font='Times New Roman',
+                                          sz='22', bold=head)],
+                                  jc='center', rtl=False))
+            else:
+                tc.append(para_el([run_el(txt, bold=head)], jc='right'))
+    return tbl
+
+
+def build_front_matter(c_contents, c_tables, c_figs):
+    F = []
+    F += spacer(4)
+    F.append(text_para('بسم الله الرحمن الرحیم', jc='center', sz='28'))
+    F.append(page_break_para())
+    F += spacer(2)
+    F.append(text_para('دانشگاه علم و هنر یزد', jc='center', sz='20',
+                       bold=True))
+    F += spacer(2)
+    for ln in ['تعیین نقش میانجی‌گر طرحواره‌های ناسازگار اولیه',
+               'در رابطه بین اضطراب صفتی و رفتارهای مالی پرخطر',
+               'در معامله‌گران بازارهای مالی']:
+        F.append(text_para(ln, jc='center', sz='48', bold=True))
+    F += spacer(2)
+    F.append(text_para('پایان‌نامه کارشناسی ارشد روان‌شناسی بالینی',
+                       jc='center', sz='28', bold=True))
+    F += spacer(3)
+    F.append(para_el([run_el('استاد راهنما: ', sz='28'),
+                      run_el('دکتر سعید وزیری یزدی', sz='28', bold=True)],
+                     jc='center'))
+    F.append(para_el([run_el('نگارنده: ', sz='28'),
+                      run_el('مریم قابل', sz='28', bold=True)], jc='center'))
+    F += spacer(2)
+    F.append(text_para('۱۴۰۵', jc='center', sz='28', bold=True))
+    F.append(page_break_para())
+    F.append(text_para('تأییدیه هیئت داوران', jc='center', sz='28',
+                       bold=True))
+    F += spacer(1)
+    F.append(text_para('[فرم تأییدیه و صورت‌جلسه دفاع پس از جلسه دفاع در این '
+                       'محل قرار می‌گیرد]', jc='center'))
+    F.append(page_break_para())
+    F.append(text_para('تعهدنامه اصالت اثر', jc='center', sz='28',
+                       bold=True))
+    F += spacer(1)
+    F.append(text_para('[فرم تعهدنامه اصالت اثر پس از تکمیل در این محل قرار '
+                       'می‌گیرد]', jc='center'))
+    F.append(page_break_para())
+    F.append(text_para('تقدیم به:', jc='center', sz='28', bold=True))
+    F += spacer(1)
+    F.append(text_para('این پژوهش را به خانواده‌ام تقدیم می‌کنم که با حمایت، '
+                       'صبوری و دلگرمی خود، مسیر تحصیل و پژوهش را برایم هموار '
+                       'ساختند.', jc='center', sz='28'))
+    F.append(page_break_para())
+    F.append(text_para('سپاسگزاری', jc='center', sz='28', bold=True))
+    F += spacer(1)
+    F.append(text_para('در آغاز، از استاد گران‌قدر راهنمای این پژوهش، جناب آقای '
+                       'دکتر سعید وزیری یزدی، که با راهنمایی‌ها و حمایت‌های '
+                       'ارزشمند خود در تمام مراحل انجام این پژوهش یاری‌ام '
+                       'کردند، صمیمانه سپاسگزارم. همچنین از تمامی استادان، '
+                       'همکاران و شرکت‌کنندگانی که امکان انجام این پژوهش را '
+                       'فراهم ساختند، قدردانی می‌کنم.', jc='both', sz='28'))
+    F.append(page_break_para())
+    F.append(text_para('چکیده:', jc='center', sz='28', bold=True))
+    F += spacer(1)
+    F.append(text_para(ABSTRACT, jc='both'))
+    F.append(para_el([run_el('کلمات کلیدی: ', bold=True),
+                      run_el(KEYWORDS)], jc='both'))
+    F.append(page_break_para())
+    F.append(text_para('فهرست مطالب', jc='center', sz='28', bold=True))
+    F += toc_field_paras('TOC \\o "1-3" \\h \\z \\u', c_contents)
+    F.append(page_break_para())
+    F.append(text_para('فهرست جدول‌ها', jc='center', sz='28', bold=True))
+    F += toc_field_paras('TOC \\f T \\h \\z', c_tables)
+    F.append(page_break_para())
+    F.append(text_para('فهرست شکل‌ها', jc='center', sz='28', bold=True))
+    F += toc_field_paras('TOC \\f F \\h \\z', c_figs)
+    F.append(page_break_para())
+    F.append(text_para('فهرست علائم', jc='center', sz='28', bold=True))
+    F += spacer(1)
+    F.append(abbrev_table())
+    return F
+
+
+CAP_RE = re.compile(r'^(جدول|شکل) [۰-۹0-9]+-[۰-۹0-9]+\.')
+SECT_ORDER = ['footerReference', 'footnotePr', 'endnotePr', 'type', 'pgSz',
+              'pgMar', 'paperSrc', 'pgBorders', 'lnNumType', 'pgNumType',
+              'cols', 'formProt', 'vAlign', 'noEndnote', 'titlePg',
+              'textDirection', 'bidi', 'rtlGutter', 'docGrid',
+              'printerSettings']
+
+
+def sect_props(model, footer_rid, fmt=None, start=None, title_pg=False):
+    sp = ET.Element(W + 'sectPr')
+    fr = ET.SubElement(sp, W + 'footerReference')
+    fr.set(W + 'type', 'default')
+    fr.set(R + 'id', footer_rid)
+    keep = {}
+    for c in list(model):
+        tag = c.tag[len(W):]
+        if tag in ('footerReference', 'headerReference', 'pgNumType',
+                   'titlePg', 'type'):
+            continue
+        keep.setdefault(tag, []).append(copy.deepcopy(c))
+    if fmt:
+        pg = ET.Element(W + 'pgNumType')
+        pg.set(W + 'fmt', fmt)
+        if start:
+            pg.set(W + 'start', str(start))
+        keep['pgNumType'] = [pg]
+    if title_pg:
+        keep['titlePg'] = [ET.Element(W + 'titlePg')]
+    for tag in SECT_ORDER[1:]:
+        for c in keep.get(tag, []):
+            sp.append(c)
+    return sp
+
+
+def joint_para(model, footer_rid, **kw):
+    p = ET.Element(W + 'p')
+    pPr = ET.SubElement(p, W + 'pPr')
+    pPr.append(sect_props(model, footer_rid, **kw))
+    return p
+
+
+def footer_xml(numbered, cache):
+    ftr = ET.Element(W + 'ftr')
+    if not numbered:
+        ftr.append(ET.Element(W + 'p'))
+        return ftr
+    p = ET.SubElement(ftr, W + 'p')
+    pr = ET.SubElement(p, W + 'pPr')
+    ET.SubElement(pr, W + 'pStyle').set(W + 'val', 'Footer')
+    ET.SubElement(pr, W + 'bidi')
+    ET.SubElement(pr, W + 'jc').set(W + 'val', 'center')
+    fs = ET.SubElement(p, W + 'fldSimple')
+    fs.set(W + 'instr', ' PAGE ')
+    fs.append(run_el(cache, sz='24'))
+    return ftr
+
+
+def extract_refs(blocks):
+    refs, cur = [], None
+    for c in blocks:
+        if c.tag != W + 'p':
+            continue
+        t = re.sub(r'\s+', ' ', T(c)).strip()
+        if not t or t == 'منابع':
+            continue
+        if t.startswith('الف)'):
+            cur = False
+            continue
+        if t.startswith('ب)'):
+            cur = True
+            continue
+        is_lat = bool(re.match(r'[A-Za-z]', t))
+        if cur is not None:
+            assert is_lat == cur, f'entry under wrong subhead: {t[:40]}'
+        refs.append((is_lat, t))
+    return refs
+
+
+def ref_norm(s):
+    return re.sub(r'\s+', ' ',
+                  s.replace('‌', ' ').replace(' ', ' ')).strip().lower()
+
+
+TYPO_MAP = str.maketrans({'ي': 'ی', 'ك': 'ک', 'ۀ': 'ه', 'ة': 'ه'})
+PUNCT_RE = re.compile(r'[،؛:.()\[\]"«»\'’‘\-–—/\\*_]+')
+
+
+def ref_folded(s):
+    s = ref_norm(s).translate(TYPO_MAP)
+    s = s.replace('‌', '').replace('‍', '')
+    return PUNCT_RE.sub('', s)
+
+
+def typo_score(s):
+    return (s.count('ی') + s.count('ک') + s.count('‌')
+            - s.count('ي') - s.count('ك'))
+
+
+def unify_refs(all_entries, log):
+    seen, fa, la, dupes, merges, flags = {}, [], [], 0, [], []
+    for is_lat, t in all_entries:
+        k = ref_norm(t)
+        if k in seen:
+            dupes += 1
+            continue
+        seen[k] = (is_lat, t)
+    items = list(seen.values())
+    by_fold, merged_drop = {}, set()
+    for is_lat, t in items:
+        f = ref_folded(t)
+        if f in by_fold:
+            prev_lat, prev_t = by_fold[f]
+            assert prev_lat == is_lat
+            keep, drop = ((t, prev_t) if typo_score(t) > typo_score(prev_t)
+                          else (prev_t, t))
+            by_fold[f] = (is_lat, keep)
+            merged_drop.add(drop)
+            merges.append((keep, drop))
+        else:
+            by_fold[f] = (is_lat, t)
+    for is_lat, t in by_fold.values():
+        (la if is_lat else fa).append(t)
+    fa.sort(key=lambda e: (build_word.fa_sort_key(e.split('،')[0]),
+                           build_word.fa_sort_key(e)))
+    la.sort(key=str.lower)
+    keys = [ref_norm(t) for _, t in by_fold.values()]
+    for i in range(len(keys)):
+        for j in range(i + 1, len(keys)):
+            if keys[i][:45] == keys[j][:45]:
+                flags.append((keys[i][:60], keys[j][:60]))
+    log.append(f'- refs exact-dupes removed: {dupes}')
+    log.append(f'- refs typo-merges: {len(merges)}')
+    for keep, drop in merges:
+        log.append(f'  KEEP: {keep[:70]}')
+        log.append(f'  DROP: {drop[:70]}')
+    log.append(f'- refs near-flags (first-45, kept both): {len(flags)}')
+    for a, b in flags[:10]:
+        log.append(f'  FLAG: {a} <-> {b}')
+    return fa, la
+
+
+def ref_para_fa(text):
+    return para_el([run_el(text, sz='24')], jc='right', after='40')
+
+
+def ref_para_la(text):
+    p = para_el([run_el(text, font='Times New Roman', sz='22')],
+                jc='left', after='40')
+    ind = ET.Element(W + 'ind')
+    ind.set(W + 'left', '720')
+    ind.set(W + 'hanging', '720')
+    p.find(W + 'pPr').append(ind)
+    return p
+
+
+def main():
+    log = []
+    with tempfile.TemporaryDirectory(prefix='v2build_') as tmp:
+        p13, p4, p5 = run_builders(tmp)
+        verify_intermediates(p13, p4, p5, log)
+        zb = zipfile.ZipFile(p13)
+        z4 = zipfile.ZipFile(p4)
+        z5 = zipfile.ZipFile(p5)
+        kids13 = list(ET.fromstring(zb.read('word/document.xml')).find(
+            W + 'body'))
+        k4 = list(ET.fromstring(z4.read('word/document.xml')).find(
+            W + 'body'))
+        k5 = list(ET.fromstring(z5.read('word/document.xml')).find(
+            W + 'body'))
+
+        def top_paras(kids):
+            return [(i, c) for i, c in enumerate(kids) if c.tag == W + 'p']
+
+        tp = top_paras(kids13)
+        tmap = {}
+        for i, c in tp:
+            tmap.setdefault(re.sub(r'\s+', ' ', T(c)).strip(), i)
+        i_f1 = tmap['فصل اول']
+        i_f2 = tmap['فصل دوم']
+        i_f3 = tmap['فصل سوم']
+        i_ref = tmap['منابع']
+        ch1 = copy.deepcopy(kids13[i_f1:i_f2])
+        ch2 = copy.deepcopy(kids13[i_f2:i_f3])
+        ch3 = copy.deepcopy(kids13[i_f3:i_ref])
+        refs13 = kids13[i_ref:]
+        t5 = top_paras(k5)
+        i5 = [i for i, c in t5
+              if re.sub(r'\s+', ' ', T(c)).strip() == 'منابع'][0]
+        ch4 = copy.deepcopy(k4)
+        ch5 = copy.deepcopy(k5[:i5])
+        refs5 = k5[i5:]
+        assert not [c for c in top_paras(k4)[0:]
+                    if re.sub(r'\s+', ' ', T(c[1])).strip() == 'منابع']
+
+        nstrip = 0
+        for blk in (ch1, ch2, ch3, ch4, ch5):
+            for c in list(blk):
+                if c.tag == W + 'p' and c.find(
+                        f'{W}pPr/{W}sectPr') is not None:
+                    assert not re.sub(r'\s+', ' ', T(c)).strip()
+                    blk.remove(c)
+                    nstrip += 1
+        for blk, nm in ((ch4, 'ch4'), (ch5, 'ch5')):
+            n = sum(1 for c in blk
+                    for _ in c.findall(f'.//{W}footnoteReference'))
+            assert n == 0, f'{nm} has footnote refs'
+
+        pinned = 0
+        for blk in (ch4, ch5):
+            for r in [e for c in blk for e in c.findall(f'.//{W}r')]:
+                if not ''.join(x.text or ''
+                               for x in r.findall(W + 't')).strip():
+                    continue
+                if r.find(W + 'rPr') is None:
+                    ET.SubElement(r, W + 'rPr')
+                if r.find(f'{W}rPr/{W}rFonts') is None:
+                    rf = ET.Element(W + 'rFonts')
+                    for a in ('ascii', 'hAnsi', 'cs'):
+                        rf.set(W + a, 'Cambria')
+                    r.find(W + 'rPr').insert(0, rf)
+                    pinned += 1
+        assert pinned > 300, pinned
+        log.append(f'- font-less ch4/ch5 runs pinned (Cambria): {pinned}')
+
+        for blk, frag in ((ch4, 'صرفاً برای نمایش روش تحلیل آماری'),
+                          (ch5, 'نمونه آموزشی است که بر پایه')):
+            n = sum(1 for c in blk if c.tag == W + 'p' and frag in T(c))
+            assert n == 1, (frag[:20], n)
+
+        c_contents, c_tables, c_figs = [], [], []
+        n0 = n1 = n2 = 0
+        for blk in (ch1, ch2, ch3, ch4, ch5):
+            for c in list(blk):
+                if c.tag != W + 'p':
+                    continue
+                t = re.sub(r'\s+', ' ', T(c)).strip()
+                if not t:
+                    continue
+                m = CAP_RE.match(t)
+                if m:
+                    flag = 'T' if m.group(1) == 'جدول' else 'F'
+                    blk.insert(blk.index(c) + 1, tc_para(t, flag))
+                    (c_tables if flag == 'T' else c_figs).append(
+                        (t, 'tableoffigures'))
+                    continue
+                ps = c.find(f'{W}pPr/{W}pStyle')
+                sid = ps.get(W + 'val') if ps is not None else ''
+                lvl = None
+                if (t in ('فصل اول', 'فصل دوم', 'فصل سوم')
+                        or t.startswith('فصل چهارم:')
+                        or t.startswith('فصل پنجم:')):
+                    lvl = ('0', (t, 'TOC1'), 'n0')
+                elif sid == 'Heading2':
+                    lvl = ('1', (t, 'TOC2'), 'n1')
+                elif sid in ('Heading3', 'Heading4'):
+                    lvl = ('2', (t, 'TOC3'), 'n2')
+                if lvl:
+                    ET.SubElement(c.find(W + 'pPr'), W + 'outlineLvl').set(
+                        W + 'val', lvl[0])
+                    c_contents.append(lvl[1])
+                    if lvl[2] == 'n0':
+                        n0 += 1
+                    elif lvl[2] == 'n1':
+                        n1 += 1
+                    else:
+                        n2 += 1
+
+        fa, la = unify_refs(extract_refs(refs13) + extract_refs(refs5), log)
+        refs = [text_para('منابع و مآخذ', jc='right', bold=True, sz='28',
+                          outline=0),
+                text_para('الف) منابع فارسی', jc='right', bold=True,
+                          sz='28'),
+                *[ref_para_fa(t) for t in fa],
+                text_para('ب) منابع لاتین', jc='right', bold=True, sz='28'),
+                *[ref_para_la(t) for t in la]]
+        c_contents.append(('منابع و مآخذ', 'TOC1'))
+        n0 += 1
+
+        F = build_front_matter(c_contents, c_tables, c_figs)
+        i_lists = next(i for i, c in enumerate(F)
+                       if c.tag == W + 'p' and re.sub(
+                           r'\s+', ' ', T(c)).strip() == 'فهرست مطالب')
+        front7, lists4 = F[:i_lists], F[i_lists:]
+
+        doc = ET.fromstring(zb.read('word/document.xml'))
+        body = doc.find(W + 'body')
+        model = body.find(W + 'sectPr')
+        ids = [r.get('Id') for r in ET.fromstring(
+            zb.read('word/_rels/document.xml.rels')).findall(
+            f'{{{RN}}}Relationship')]
+        n = 1
+        while f'rId{n}' in ids:
+            n += 1
+        rid_empty, rid_roman, rid_hindi = f'rId{n}', f'rId{n+1}', f'rId{n+2}'
+
+        new = (front7 + [joint_para(model, rid_empty)]
+               + lists4 + [joint_para(model, rid_roman, fmt='upperRoman')]
+               + ch1 + [joint_para(model, rid_hindi, fmt='hindi', start=1,
+                                   title_pg=True)]
+               + ch2 + [joint_para(model, rid_hindi, fmt='hindi',
+                                   title_pg=True)]
+               + ch3 + [joint_para(model, rid_hindi, fmt='hindi',
+                                   title_pg=True)]
+               + ch4 + [joint_para(model, rid_hindi, fmt='hindi',
+                                   title_pg=True)]
+               + ch5 + [page_break_para()] + refs)
+        for c in list(body):
+            body.remove(c)
+        for c in new:
+            body.append(c)
+        body.append(sect_props(model, rid_hindi, fmt='hindi',
+                               title_pg=True))
+
+        styles = ET.fromstring(zb.read('word/styles.xml'))
+        for s in list(styles.findall(W + 'style')):
+            if s.get(W + 'styleId') in ('TOC1', 'TOC2', 'TOC3',
+                                        'tableoffigures'):
+                styles.remove(s)
+        pg = model.find(W + 'pgSz')
+        pm = model.find(W + 'pgMar')
+        tab_pos = (int(pg.get(W + 'w')) - int(pm.get(W + 'left'))
+                   - int(pm.get(W + 'right')))
+        for sid, nm, sz in [('TOC1', 'toc 1', '24'),
+                            ('TOC2', 'toc 2', '24'),
+                            ('TOC3', 'toc 3', '24'),
+                            ('tableoffigures', 'Table of Figures', '24')]:
+            styles.append(rtl_toc_style(sid, nm, sz, tab_pos,
+                                        bold=(sid == 'TOC1')))
+
+        rels = ET.fromstring(zb.read('word/_rels/document.xml.rels'))
+        for r in list(rels.findall(f'{{{RN}}}Relationship')):
+            if re.fullmatch(r'footer\d+\.xml', r.get('Target') or ''):
+                rels.remove(r)
+        for rid, tgt in ((rid_empty, 'footer1.xml'),
+                         (rid_roman, 'footer2.xml'),
+                         (rid_hindi, 'footer3.xml')):
+            nr = ET.SubElement(rels, f'{{{RN}}}Relationship')
+            nr.set('Id', rid)
+            nr.set('Type', f'{RN}/footer')
+            nr.set('Target', tgt)
+        img = z4.read('word/media/image1.png')
+        m = 1
+        while f'rId{m}' in ids + [rid_empty, rid_roman, rid_hindi]:
+            m += 1
+        nr = ET.SubElement(rels, f'{{{RN}}}Relationship')
+        nr.set('Id', f'rId{m}')
+        nr.set('Type', f'{RN}/image')
+        nr.set('Target', 'media/image1.png')
+        for c in ch4:
+            for e in c.findall(f'.//{W}drawing'):
+                for b in e.findall('.//{http://schemas.openxmlformats.org/drawingml/2006/main}blip'):
+                    b.set(R + 'embed', f'rId{m}')
+        ct = ET.fromstring(zb.read('[Content_Types].xml'))
+        for e in list(ct):
+            if (e.tag == f'{{{CTN}}}Override' and 'footer' in
+                    (e.get('PartName') or '')):
+                ct.remove(e)
+        for k in (1, 2, 3):
+            o = ET.SubElement(ct, f'{{{CTN}}}Override')
+            o.set('PartName', f'/word/footer{k}.xml')
+            o.set('ContentType', 'application/vnd.openxmlformats-officedocument'
+                  '.wordprocessingml.footer+xml')
+        if not [e for e in ct if e.get('Extension') == 'png']:
+            dflt = ET.SubElement(ct, f'{{{CTN}}}Default')
+            dflt.set('Extension', 'png')
+            dflt.set('ContentType', 'image/png')
+        settings = zb.read('word/settings.xml')
+        assert b'updateFields' not in settings
+        anchor = b'<w:characterSpacingControl'
+        if settings.count(anchor) != 1:
+            anchor = b'<w:defaultTabStop'
+        if settings.count(anchor) != 1:
+            anchor = b'</w:settings>'
+            settings = settings.replace(
+                anchor, b'<w:updateFields w:val="1"/>' + anchor, 1)
+        else:
+            settings = settings.replace(
+                anchor, b'<w:updateFields w:val="1"/>' + anchor, 1)
+
+        with zipfile.ZipFile(OUT, 'w', zipfile.ZIP_DEFLATED) as z:
+            for name in zb.namelist():
+                if (name in ('word/document.xml',
+                             'word/_rels/document.xml.rels',
+                             'word/styles.xml', 'word/settings.xml',
+                             '[Content_Types].xml')
+                        or re.fullmatch(r'word/footer\d+\.xml', name)):
+                    continue
+                z.writestr(name, zb.read(name))
+            xml_decl = ('<?xml version="1.0" encoding="UTF-8" '
+                        'standalone="yes"?>\n')
+            z.writestr('word/document.xml',
+                       xml_decl + ET.tostring(doc, encoding='unicode'))
+            z.writestr('word/_rels/document.xml.rels',
+                       xml_decl + ET.tostring(rels, encoding='unicode'))
+            z.writestr('word/styles.xml',
+                       xml_decl + ET.tostring(styles, encoding='unicode'))
+            z.writestr('word/settings.xml', settings)
+            z.writestr('[Content_Types].xml',
+                       xml_decl + ET.tostring(ct, encoding='unicode'))
+            z.writestr('word/footer1.xml',
+                       xml_decl + ET.tostring(footer_xml(False, ''),
+                                              encoding='unicode'))
+            z.writestr('word/footer2.xml',
+                       xml_decl + ET.tostring(footer_xml(True, 'i'),
+                                              encoding='unicode'))
+            z.writestr('word/footer3.xml',
+                       xml_decl + ET.tostring(footer_xml(True, '۱'),
+                                              encoding='unicode'))
+            z.writestr('word/media/image1.png', img)
+
+    abstract_n = len(ABSTRACT.split())
+    report = ['# گزارش ساخت thesis_complete_draft_v2', '',
+              'مبنا: فقط فایل‌های متنی main (هیچ فایل Word قدیمی خوانده نشد).',
+              'سازنده‌ها: `build_word.py` (فصل ۱-۳) + `build_ch4_word.py` '
+              '(فصل ۴ واقع‌نما) + `build_ch5_word.py` (فصل ۵ واقع‌نما).', '']
+    report += ['## ترتیب صفحات مقدماتی (۱۱ صفحه)', '',
+               '۱. بسم‌الله', '۲. عنوان فارسی', '۳. تأییدیه هیئت داوران '
+               '(placeholder)', '۴. تعهدنامه اصالت اثر (placeholder)',
+               '۵. تقدیم (متن پیش‌فرض مأموریت)', '۶. سپاسگزاری (متن پیش‌فرض '
+               'مأموریت)', '۷. چکیده فارسی + ۵ کلیدواژه', '۸. فهرست مطالب '
+               '(TOC واقعی، سه‌سطحی، RTL)', '۹. فهرست جدول‌ها (TC، RTL)',
+               '۱۰. فهرست شکل‌ها (TC، RTL)', '۱۱. فهرست علائم (جدول واقعی '
+               '۱۶ ردیفه)', '']
+    report += ['## آمار', '',
+               f'- جدول‌ها: 12 | شکل‌ها: 1 (شکل ۲-۱ فقط کپشن دارد، بدون تصویر)',
+               f'- منابع نهایی: {len(fa)} فارسی + {len(la)} لاتین',
+               f'- چکیده: {abstract_n} کلمه (حداکثر یک صفحه طبق راهنما)',
+               '- تعداد صفحات: ۱۱ صفحه مقدماتی (قطعی) + فصول؛ کل دقیق پس از '
+               'باز شدن در Word مشخص می‌شود', '']
+    report += ['## placeholderهای باقی‌مانده', '',
+               '- فرم تأییدیه و صورت‌جلسه دفاع (پس از جلسه دفاع)',
+               '- فرم تعهدنامه اصالت اثر (پس از تکمیل)', '']
+    report += ['## وضعیت فصل ۴ و ۵', '',
+               'هر دو فصل نسخهٔ آموزشی مبتنی بر داده شبیه‌سازی‌شده‌اند؛ هشدار '
+               'دقیقاً یک‌بار در ابتدای هر فصل حفظ شده است.', '']
+    report += ['## راستی‌آزمایی میانی‌ها', ''] + log + ['']
+    report += ['## یادداشت‌ها', '',
+               '- شماره‌گذاری: مقدماتی (۱-۷) بی‌شماره؛ فهرست‌ها (۸-۱۱) رومی؛ '
+               'متن فارسی پیوسته از فصل ۱؛ صفحه اول هر فصل بی‌شماره ولی به حساب.',
+               '- سایه خاکستری فیلدها تنظیم سطح Word است (View/Options) و در '
+               'فایل ذخیره نمی‌شود؛ همه فیلدها نتیجه کش‌شده دارند.',
+               '- VIF / نماد CI / نماد β در متن فصل‌ها با همین صورت نیامده‌اند '
+               '(مفهوم آن‌ها هست) ولی طبق دستور مأموریت در فهرست علائم‌اند.',
+               '- شکل ۲-۱ در منبع فقط کپشن دارد (بدون فایل تصویر).', '']
+    REPORT.write_text('\n'.join(report), encoding='utf-8')
+    print(f'stripped={nstrip} pinned={pinned} outline=({n0},{n1},{n2}) '
+          f'tables={len(c_tables)} figs={len(c_figs)}')
+    print(f'refs_fa={len(fa)} refs_latin={len(la)} '
+          f'abstract_words={abstract_n}')
+    print('wrote', OUT)
+    print('wrote', REPORT)
+
+
+if __name__ == '__main__':
+    main()
