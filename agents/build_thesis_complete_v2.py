@@ -23,6 +23,9 @@ import build_ch5_word
 
 ET.register_namespace('w', 'http://schemas.openxmlformats.org/wordprocessingml/2006/main')
 ET.register_namespace('r', 'http://schemas.openxmlformats.org/officeDocument/2006/relationships')
+ET.register_namespace('wp', 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing')
+ET.register_namespace('a', 'http://schemas.openxmlformats.org/drawingml/2006/main')
+ET.register_namespace('pic', 'http://schemas.openxmlformats.org/drawingml/2006/picture')
 W = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
 R = '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}'
 RN = 'http://schemas.openxmlformats.org/package/2006/relationships'
@@ -159,7 +162,7 @@ def text_para(text, **kw):
     return para_el([run_el(text, font=kw.pop('font', 'B Nazanin'),
                            sz=kw.pop('sz', '24'),
                            bold=kw.pop('bold', False),
-                           rtl=kw.pop('rtl_run', False))],
+                           rtl=kw.pop('rtl_run', True))],
                    pstyle=kw.pop('pstyle', None), **kw)
 
 
@@ -170,23 +173,60 @@ def page_break_para():
     return p
 
 
-def tc_para(caption, flag):
-    assert '"' not in caption
-    p = ET.Element(W + 'p')
-    ET.SubElement(ET.SubElement(p, W + 'pPr'), W + 'bidi')
-    for kt, tx in (('begin', None), (None, f'TC "{caption}" \\f {flag} \\l 1'),
-                   ('end', None)):
-        r = ET.SubElement(p, W + 'r')
-        rp = ET.SubElement(r, W + 'rPr')
-        ET.SubElement(rp, W + 'vanish')
-        rf = ET.SubElement(rp, W + 'rFonts')
-        rf.set(W + 'ascii', 'B Nazanin')
-        rf.set(W + 'hAnsi', 'B Nazanin')
-        if kt:
-            ET.SubElement(r, W + 'fldChar').set(W + 'fldCharType', kt)
-        else:
-            ET.SubElement(r, W + 'instrText').text = tx
-    return p
+CAP_SPLIT_RE = re.compile(r'^(جدول|شکل) ([۰-۹0-9]+-[۰-۹0-9]+)\.(.*)$',
+                            re.DOTALL)
+
+
+def _run_with(text, rpr):
+    r = ET.Element(W + 'r')
+    r.append(copy.deepcopy(rpr))
+    t = ET.SubElement(r, W + 't')
+    t.text = text
+    t.set('{http://www.w3.org/XML/1998/namespace}space', 'preserve')
+    return r
+
+
+def seq_caption_surgery(c):
+    """Replace the caption number with a LOCKED SEQ field caching the same
+    number (visible text byte-identical; TOC \\c "جدول"/"شکل" picks it up)."""
+    runs = c.findall(W + 'r')
+    t1 = ''.join(x.text or '' for x in runs[0].findall(W + 't'))
+    m = CAP_SPLIT_RE.match(t1)
+    assert m, f'caption shape: {t1[:60]!r}'
+    label, num, rest1 = m.group(1), m.group(2), m.group(3)
+    base = runs[0].find(W + 'rPr')
+    assert base is not None
+    before = ''.join(x.text or ''
+                     for r in runs for x in r.findall(W + 't'))
+    new = [_run_with(label + ' ', base)]
+    rb = ET.Element(W + 'r')
+    rb.append(copy.deepcopy(base))
+    fb = ET.SubElement(rb, W + 'fldChar')
+    fb.set(W + 'fldCharType', 'begin')
+    fb.set(W + 'fldLock', 'true')
+    new.append(rb)
+    ri = ET.Element(W + 'r')
+    ri.append(copy.deepcopy(base))
+    ET.SubElement(ri, W + 'instrText').text = f'SEQ {label}'
+    new.append(ri)
+    rs = ET.Element(W + 'r')
+    rs.append(copy.deepcopy(base))
+    ET.SubElement(rs, W + 'fldChar').set(W + 'fldCharType', 'separate')
+    new.append(rs)
+    new.append(_run_with(num, base))
+    re_ = ET.Element(W + 'r')
+    re_.append(copy.deepcopy(base))
+    ET.SubElement(re_, W + 'fldChar').set(W + 'fldCharType', 'end')
+    new.append(re_)
+    new.append(_run_with('.' + rest1, base))
+    idx = list(c).index(runs[0])
+    for r in reversed(new):
+        c.insert(idx + 1, r)
+    c.remove(runs[0])
+    after = ''.join(x.text or ''
+                    for r in c.findall(W + 'r') for x in r.findall(W + 't'))
+    assert after == before, (before[:50], after[:50])
+    return label
 
 
 TOC_RUN_SZ = {'TOC1': '24', 'TOC2': '24', 'TOC3': '24',
@@ -311,18 +351,19 @@ def abbrev_table():
         (s, f, False) for s, f in ABBREVS]
     for sym, fa, head in rows:
         tr = ET.SubElement(tbl, W + 'tr')
-        for txt, latin in ((sym, True), (fa, False)):
+        for txt, sym_col in ((sym, True), (fa, False)):
             tc = ET.SubElement(tr, W + 'tc')
             tcpr = ET.SubElement(tc, W + 'tcPr')
-            ET.SubElement(tcpr, W + 'tcW').set(W + 'w', '2200' if latin
+            ET.SubElement(tcpr, W + 'tcW').set(W + 'w', '2200' if sym_col
                                                else '6021')
             ET.SubElement(tcpr, W + 'tcW').set(W + 'type', 'dxa')
-            if latin:
+            if sym_col and not head:
                 tc.append(para_el([run_el(txt, font='Times New Roman',
-                                          sz='22', bold=head)],
+                                          sz='22')],
                                   jc='center', rtl=False))
             else:
-                tc.append(para_el([run_el(txt, bold=head)], jc='right'))
+                tc.append(para_el([run_el(txt, bold=head, rtl=True)],
+                                  jc='center' if sym_col else 'right'))
     return tbl
 
 
@@ -343,11 +384,12 @@ def build_front_matter(c_contents, c_tables, c_figs):
     F.append(text_para('پایان‌نامه کارشناسی ارشد روان‌شناسی بالینی',
                        jc='center', sz='28', bold=True))
     F += spacer(3)
-    F.append(para_el([run_el('استاد راهنما: ', sz='28'),
-                      run_el('دکتر سعید وزیری یزدی', sz='28', bold=True)],
+    F.append(para_el([run_el('استاد راهنما: ', sz='28', rtl=True),
+                      run_el('دکتر سعید وزیری یزدی', sz='28', bold=True,
+                             rtl=True)], jc='center'))
+    F.append(para_el([run_el('نگارنده: ', sz='28', rtl=True),
+                      run_el('مریم قابل', sz='28', bold=True, rtl=True)],
                      jc='center'))
-    F.append(para_el([run_el('نگارنده: ', sz='28'),
-                      run_el('مریم قابل', sz='28', bold=True)], jc='center'))
     F += spacer(2)
     F.append(text_para('۱۴۰۵', jc='center', sz='28', bold=True))
     F.append(page_break_para())
@@ -381,17 +423,17 @@ def build_front_matter(c_contents, c_tables, c_figs):
     F.append(text_para('چکیده:', jc='center', sz='28', bold=True))
     F += spacer(1)
     F.append(text_para(ABSTRACT, jc='both'))
-    F.append(para_el([run_el('کلمات کلیدی: ', bold=True),
-                      run_el(KEYWORDS)], jc='both'))
+    F.append(para_el([run_el('کلمات کلیدی: ', bold=True, rtl=True),
+                      run_el(KEYWORDS, rtl=True)], jc='both'))
     F.append(page_break_para())
     F.append(text_para('فهرست مطالب', jc='center', sz='28', bold=True))
     F += toc_field_paras('TOC \\o "1-3" \\h \\z \\u', c_contents)
     F.append(page_break_para())
     F.append(text_para('فهرست جدول‌ها', jc='center', sz='28', bold=True))
-    F += toc_field_paras('TOC \\f T \\h \\z', c_tables)
+    F += toc_field_paras('TOC \\h \\z \\c "جدول"', c_tables)
     F.append(page_break_para())
     F.append(text_para('فهرست شکل‌ها', jc='center', sz='28', bold=True))
-    F += toc_field_paras('TOC \\f F \\h \\z', c_figs)
+    F += toc_field_paras('TOC \\h \\z \\c "شکل"', c_figs)
     F.append(page_break_para())
     F.append(text_para('فهرست علائم', jc='center', sz='28', bold=True))
     F += spacer(1)
@@ -541,7 +583,8 @@ def unify_refs(all_entries, log):
 
 
 def ref_para_fa(text):
-    return para_el([run_el(text, sz='24')], jc='right', after='40')
+    return para_el([run_el(text, sz='24', rtl=True)], jc='right',
+                   after='40')
 
 
 def ref_para_la(text):
@@ -606,22 +649,42 @@ def main():
                     for _ in c.findall(f'.//{W}footnoteReference'))
             assert n == 0, f'{nm} has footnote refs'
 
-        pinned = 0
+        # Bug-2 fix: drop the copied drawing; the figure is re-inserted via
+        # python-docx run.add_picture() after the package is written, so the
+        # library owns media bytes + rel + drawing XML (standard prefixes).
+        ndraw = 0
+        for c in ch4:
+            for p in ([c] if c.tag == W + 'p' else []):
+                for r in p.findall(W + 'r'):
+                    for d in r.findall(W + 'drawing'):
+                        r.remove(d)
+                        ndraw += 1
+        assert ndraw == 1, ndraw
+        log.append('- ch4 drawing removed for add_picture re-insertion')
+
+        FA_CH = re.compile(r'[\u200c\u0600-\u06FF\uFB50-\uFDFF'
+                           r'\uFE70-\uFEFF]')
+        pinned = pinned_fa = 0
         for blk in (ch4, ch5):
             for r in [e for c in blk for e in c.findall(f'.//{W}r')]:
-                if not ''.join(x.text or ''
-                               for x in r.findall(W + 't')).strip():
+                txt = ''.join(x.text or '' for x in r.findall(W + 't'))
+                if not txt.strip():
                     continue
                 if r.find(W + 'rPr') is None:
                     ET.SubElement(r, W + 'rPr')
                 if r.find(f'{W}rPr/{W}rFonts') is None:
+                    is_fa = FA_CH.search(txt) is not None
                     rf = ET.Element(W + 'rFonts')
                     for a in ('ascii', 'hAnsi', 'cs'):
-                        rf.set(W + a, 'Cambria')
+                        rf.set(W + a, 'B Nazanin' if is_fa else 'Cambria')
                     r.find(W + 'rPr').insert(0, rf)
+                    if is_fa and r.find(f'{W}rPr/{W}rtl') is None:
+                        ET.SubElement(r.find(W + 'rPr'), W + 'rtl')
+                        pinned_fa += 1
                     pinned += 1
         assert pinned > 300, pinned
-        log.append(f'- font-less ch4/ch5 runs pinned (Cambria): {pinned}')
+        log.append(f'- font-less ch4/ch5 runs pinned: {pinned} '
+                   f'(FA->B Nazanin+rtl: {pinned_fa})')
 
         for blk, frag in ((ch4, 'صرفاً برای نمایش روش تحلیل آماری'),
                           (ch5, 'نمونه آموزشی است که بر پایه')):
@@ -639,9 +702,8 @@ def main():
                     continue
                 m = CAP_RE.match(t)
                 if m:
-                    flag = 'T' if m.group(1) == 'جدول' else 'F'
-                    blk.insert(blk.index(c) + 1, tc_para(t, flag))
-                    (c_tables if flag == 'T' else c_figs).append(
+                    label = seq_caption_surgery(c)
+                    (c_tables if label == 'جدول' else c_figs).append(
                         (t, 'tableoffigures'))
                     continue
                 ps = c.find(f'{W}pPr/{W}pStyle')
@@ -739,18 +801,6 @@ def main():
             nr.set('Id', rid)
             nr.set('Type', f'{RN}/footer')
             nr.set('Target', tgt)
-        img = z4.read('word/media/image1.png')
-        m = 1
-        while f'rId{m}' in ids + [rid_empty, rid_roman, rid_hindi]:
-            m += 1
-        nr = ET.SubElement(rels, f'{{{RN}}}Relationship')
-        nr.set('Id', f'rId{m}')
-        nr.set('Type', f'{RN}/image')
-        nr.set('Target', 'media/image1.png')
-        for c in ch4:
-            for e in c.findall(f'.//{W}drawing'):
-                for b in e.findall('.//{http://schemas.openxmlformats.org/drawingml/2006/main}blip'):
-                    b.set(R + 'embed', f'rId{m}')
         ct = ET.fromstring(zb.read('[Content_Types].xml'))
         for e in list(ct):
             if (e.tag == f'{{{CTN}}}Override' and 'footer' in
@@ -761,10 +811,6 @@ def main():
             o.set('PartName', f'/word/footer{k}.xml')
             o.set('ContentType', 'application/vnd.openxmlformats-officedocument'
                   '.wordprocessingml.footer+xml')
-        if not [e for e in ct if e.get('Extension') == 'png']:
-            dflt = ET.SubElement(ct, f'{{{CTN}}}Default')
-            dflt.set('Extension', 'png')
-            dflt.set('ContentType', 'image/png')
         settings = zb.read('word/settings.xml')
         assert b'updateFields' not in settings
         anchor = b'<w:characterSpacingControl'
@@ -807,7 +853,30 @@ def main():
             z.writestr('word/footer3.xml',
                        xml_decl + ET.tostring(footer_xml(True, '۱'),
                                               encoding='unicode'))
-            z.writestr('word/media/image1.png', img)
+
+    from docx import Document as _DocxDocument
+    from docx.shared import Cm
+    _d = _DocxDocument(str(OUT))
+    _w = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
+    def _is_list_cache(p):
+        _ps = p.find(f'{{{_w}}}pPr/{{{_w}}}pStyle')
+        return _ps is not None and _ps.get(f'{{{_w}}}val') in (
+            'TOC1', 'TOC2', 'TOC3', 'tableoffigures')
+
+    _caps = [p for p in _d.element.body.findall(f'{{{_w}}}p')
+             if not _is_list_cache(p) and ''.join(
+                 x.text or '' for x in p.findall(f'.//{{{_w}}}t'))
+             .startswith('شکل ۴-۱')]
+    assert len(_caps) == 1, len(_caps)
+    _figp = _caps[0].getprevious()
+    assert _figp is not None and _figp.tag == f'{{{_w}}}p'
+    assert _figp.find(f'.//{{{_w}}}drawing') is None
+    _runs = _figp.findall(f'{{{_w}}}r')
+    assert len(_runs) >= 1
+    _para = next(p for p in _d.paragraphs if p._p is _figp)
+    _para.runs[0].add_picture(str(CH4_FIG), width=Cm(14))
+    _d.save(str(OUT))
+    log.append('- fig 4-1 embedded via python-docx add_picture (14cm)')
 
     abstract_n = len(ABSTRACT.split())
     report = ['# گزارش ساخت thesis_complete_draft_v2', '',
@@ -819,11 +888,11 @@ def main():
                '(placeholder)', '۴. تعهدنامه اصالت اثر (placeholder)',
                '۵. تقدیم (متن پیش‌فرض مأموریت)', '۶. سپاسگزاری (متن پیش‌فرض '
                'مأموریت)', '۷. چکیده فارسی + ۵ کلیدواژه', '۸. فهرست مطالب '
-               '(TOC واقعی، سه‌سطحی، RTL)', '۹. فهرست جدول‌ها (TC، RTL)',
-               '۱۰. فهرست شکل‌ها (TC، RTL)', '۱۱. فهرست علائم (جدول واقعی '
+               '(TOC واقعی، سه‌سطحی، RTL)', '۹. فهرست جدول‌ها (SEQ با \\c، RTL)',
+               '۱۰. فهرست شکل‌ها (SEQ با \\c، RTL)', '۱۱. فهرست علائم (جدول واقعی '
                '۱۶ ردیفه)', '']
     report += ['## آمار', '',
-               f'- جدول‌ها: 12 | شکل‌ها: 1 (شکل ۲-۱ فقط کپشن دارد، بدون تصویر)',
+               f'- جدول‌ها: 12 (۱۱ کپشن جدول در فهرست جدول‌ها + جدول گرافیکی شکل ۲-۱ در فهرست شکل‌ها) | شکل‌ها: 1 تصویر (۴-۱)',
                f'- منابع نهایی: {len(fa)} فارسی + {len(la)} لاتین',
                f'- چکیده: {abstract_n} کلمه (حداکثر یک صفحه طبق راهنما)',
                '- تعداد صفحات: ۱۱ صفحه مقدماتی (قطعی) + فصول؛ کل دقیق پس از '
@@ -842,7 +911,10 @@ def main():
                'فایل ذخیره نمی‌شود؛ همه فیلدها نتیجه کش‌شده دارند.',
                '- VIF / نماد CI / نماد β در متن فصل‌ها با همین صورت نیامده‌اند '
                '(مفهوم آن‌ها هست) ولی طبق دستور مأموریت در فهرست علائم‌اند.',
-               '- شکل ۲-۱ در منبع فقط کپشن دارد (بدون فایل تصویر).', '']
+               '- شکل ۲-۱ در منبع فقط کپشن دارد (بدون فایل تصویر)؛ گرافیک آن یک جدول مفهومی است که با همان کپشن در فهرست شکل‌ها پوشش داده می‌شود.',
+               '- اصلاح باگ پرانتز: ران‌های فارسی بدون فونت فصل ۴ به B Nazanin با w:rtl ارتقا یافتند (نویسه‌های پرانتز دست‌نخورده: U+0028/U+0029).',
+               '- تصویر شکل ۴-۱ با run.add_picture درج شده (کتابخانه مالک بایت‌ها، rel و drawing است).',
+               '- کپشن‌ها فیلد SEQ قفل‌شده (fldLock) با همان شماره فارسی دارند؛ فهرست‌ها با \\c ساخته می‌شوند و F9 شماره‌ها را عوض نمی‌کند.', '']
     REPORT.write_text('\n'.join(report), encoding='utf-8')
     print(f'stripped={nstrip} pinned={pinned} outline=({n0},{n1},{n2}) '
           f'tables={len(c_tables)} figs={len(c_figs)}')

@@ -13,13 +13,13 @@
 ۶. سپاسگزاری (متن پیش‌فرض مأموریت)
 ۷. چکیده فارسی + ۵ کلیدواژه
 ۸. فهرست مطالب (TOC واقعی، سه‌سطحی، RTL)
-۹. فهرست جدول‌ها (TC، RTL)
-۱۰. فهرست شکل‌ها (TC، RTL)
+۹. فهرست جدول‌ها (SEQ با \c، RTL)
+۱۰. فهرست شکل‌ها (SEQ با \c، RTL)
 ۱۱. فهرست علائم (جدول واقعی ۱۶ ردیفه)
 
 ## آمار
 
-- جدول‌ها: 12 | شکل‌ها: 1 (شکل ۲-۱ فقط کپشن دارد، بدون تصویر)
+- جدول‌ها: 12 (۱۱ کپشن جدول در فهرست جدول‌ها + جدول گرافیکی شکل ۲-۱ در فهرست شکل‌ها) | شکل‌ها: 1 تصویر (۴-۱)
 - منابع نهایی: 12 فارسی + 70 لاتین
 - چکیده: 161 کلمه (حداکثر یک صفحه طبق راهنما)
 - تعداد صفحات: ۱۱ صفحه مقدماتی (قطعی) + فصول؛ کل دقیق پس از باز شدن در Word مشخص می‌شود
@@ -40,7 +40,8 @@
   first-diff committed: ۲-۱ مقدمه
 - intermediate ch4: 47 paras, identical-to-committed=True
 - intermediate ch5: 37 paras, identical-to-committed=True
-- font-less ch4/ch5 runs pinned (Cambria): 362
+- ch4 drawing removed for add_picture re-insertion
+- font-less ch4/ch5 runs pinned: 362 (FA->B Nazanin+rtl: 351)
 - refs exact-dupes removed: 34
 - refs typo-merges: 0
 - refs near-flags (first-45, kept both): 6
@@ -50,10 +51,14 @@
   FLAG: lo, a. w., repin, d. v., & steenbarger, b. n. (2005). fear a <-> lo, a. w., repin, d. v., & steenbarger, b. n. (2005). fear a
   FLAG: mahato, s., et al. (2025). millennials and zoomers as invest <-> mahato, s., et al. (2025). millennials and zoomers as invest
   FLAG: ololo, k., et al. (2024). rational emotive and cognitive beh <-> ololo, k., et al. (2024). rational emotive and cognitive beh
+- fig 4-1 embedded via python-docx add_picture (14cm)
 
 ## یادداشت‌ها
 
 - شماره‌گذاری: مقدماتی (۱-۷) بی‌شماره؛ فهرست‌ها (۸-۱۱) رومی؛ متن فارسی پیوسته از فصل ۱؛ صفحه اول هر فصل بی‌شماره ولی به حساب.
 - سایه خاکستری فیلدها تنظیم سطح Word است (View/Options) و در فایل ذخیره نمی‌شود؛ همه فیلدها نتیجه کش‌شده دارند.
 - VIF / نماد CI / نماد β در متن فصل‌ها با همین صورت نیامده‌اند (مفهوم آن‌ها هست) ولی طبق دستور مأموریت در فهرست علائم‌اند.
-- شکل ۲-۱ در منبع فقط کپشن دارد (بدون فایل تصویر).
+- شکل ۲-۱ در منبع فقط کپشن دارد (بدون فایل تصویر)؛ گرافیک آن یک جدول مفهومی است که با همان کپشن در فهرست شکل‌ها پوشش داده می‌شود.
+- اصلاح باگ پرانتز: ران‌های فارسی بدون فونت فصل ۴ به B Nazanin با w:rtl ارتقا یافتند (نویسه‌های پرانتز دست‌نخورده: U+0028/U+0029).
+- تصویر شکل ۴-۱ با run.add_picture درج شده (کتابخانه مالک بایت‌ها، rel و drawing است).
+- کپشن‌ها فیلد SEQ قفل‌شده (fldLock) با همان شماره فارسی دارند؛ فهرست‌ها با \c ساخته می‌شوند و F9 شماره‌ها را عوض نمی‌کند.
