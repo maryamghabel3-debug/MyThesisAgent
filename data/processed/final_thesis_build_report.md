@@ -1,0 +1,67 @@
+# گزارش ساخت thesis_complete_draft_v2
+
+مبنا: فقط فایل‌های متنی main (هیچ فایل Word قدیمی خوانده نشد).
+سازنده‌ها: `build_word.py` (فصل ۱-۳) + `build_ch4_word.py` (فصل ۴ واقع‌نما) + `build_ch5_word.py` (فصل ۵ واقع‌نما).
+
+## ترتیب صفحات مقدماتی (۱۱ صفحه)
+
+۱. بسم‌الله
+۲. عنوان فارسی
+۳. تأییدیه هیئت داوران (placeholder)
+۴. تعهدنامه اصالت اثر (placeholder)
+۵. تقدیم (متن پیش‌فرض مأموریت)
+۶. سپاسگزاری (متن پیش‌فرض مأموریت)
+۷. چکیده فارسی + ۵ کلیدواژه
+۸. فهرست مطالب (TOC واقعی، سه‌سطحی، RTL)
+۹. فهرست جدول‌ها (SEQ با \c، RTL)
+۱۰. فهرست شکل‌ها (SEQ با \c، RTL)
+۱۱. فهرست علائم (جدول واقعی ۱۶ ردیفه)
+
+## آمار
+
+- جدول‌ها: 12 (۱۱ کپشن جدول در فهرست جدول‌ها + جدول گرافیکی شکل ۲-۱ در فهرست شکل‌ها) | شکل‌ها: 1 تصویر (۴-۱)
+- منابع نهایی: 12 فارسی + 70 لاتین
+- چکیده: 161 کلمه (حداکثر یک صفحه طبق راهنما)
+- تعداد صفحات: ۱۱ صفحه مقدماتی (قطعی) + فصول؛ کل دقیق پس از باز شدن در Word مشخص می‌شود
+
+## placeholderهای باقی‌مانده
+
+- فرم تأییدیه و صورت‌جلسه دفاع (پس از جلسه دفاع)
+- فرم تعهدنامه اصالت اثر (پس از تکمیل)
+
+## وضعیت فصل ۴ و ۵
+
+هر دو فصل نسخهٔ آموزشی مبتنی بر داده شبیه‌سازی‌شده‌اند؛ هشدار دقیقاً یک‌بار در ابتدای هر فصل حفظ شده است.
+
+## راستی‌آزمایی میانی‌ها
+
+- intermediate ch1-3: fresh=345 committed=344 differing=184 (committed docx is stale; md wins)
+  first-diff fresh: ۲-۱. مقدمه
+  first-diff committed: ۲-۱ مقدمه
+- intermediate ch4: 47 paras, identical-to-committed=True
+- intermediate ch5: 37 paras, identical-to-committed=True
+- ch4 drawing removed for add_picture re-insertion
+- font-less ch4/ch5 runs pinned: 362 (FA->B Nazanin+rtl: 351)
+- refs exact-dupes removed: 34
+- refs typo-merges: 0
+- refs near-flags (first-45, kept both): 6
+  FLAG: امیدی، ع.، کدیور، پ.، و فرزاد، و. (۱۳۹۲). رابطه بین طرحواره  <-> امیدی، ع.، کدیور، پ.، و فرزاد، و. (۱۳۹۲). رابطه بین طرحواره 
+  FLAG: فروغی، د.، و تهرانی، ر. (۱۳۹۷). نقش سواد مالی در تعدیل رابطه <-> فروغی، د.، و تهرانی، ر. (۱۳۹۷). نقش سواد مالی در تعدیل رابطه
+  FLAG: فلاح، م.، و خدایی، ا. (۱۳۹۸). رابطه هوش هیجانی و سبک های تصم <-> فلاح، م.، و خدایی، ا. (۱۳۹۸). رابطه هوش هیجانی و سبک های تصم
+  FLAG: lo, a. w., repin, d. v., & steenbarger, b. n. (2005). fear a <-> lo, a. w., repin, d. v., & steenbarger, b. n. (2005). fear a
+  FLAG: mahato, s., et al. (2025). millennials and zoomers as invest <-> mahato, s., et al. (2025). millennials and zoomers as invest
+  FLAG: ololo, k., et al. (2024). rational emotive and cognitive beh <-> ololo, k., et al. (2024). rational emotive and cognitive beh
+- fig 4-1 embedded via python-docx add_picture (14cm)
+- package gate: well-formed + OPC + schema orders + enums OK
+
+## یادداشت‌ها
+
+- شماره‌گذاری: مقدماتی (۱-۷) بی‌شماره؛ فهرست‌ها (۸-۱۱) رومی؛ متن فارسی پیوسته از فصل ۱؛ صفحه اول هر فصل بی‌شماره ولی به حساب.
+- قالب شماره صفحه متن و پاورقی decimal است (معتبر در طرحواره)؛ با Numeral=Context در Word فارسی و زبان fa-IR فوتر، ارقام فارسی ۰۱۲۳ نمایش داده می‌شوند. مقدار hindi عضو ST_NumberFormat نیست.
+- رفع خطای Unreadable Content: نوع rel فوترها (officeDocument)، ترتیب pPr (spacing/ind پیش از jc)، ترتیب pPr استایل‌های TOC، جای tblGrid (فرزند tbl)، جای updateFields (پیش از compat)، zoom (percent)، ترتیب tblPr جدول‌ها (bidiVisual/tblBorders) و مقادیر numFmt همگی با XSD انتقالی ECMA-376 اعتبارسنجی شدند؛ گیت validate_package پس از هر ساخت اجرا می‌شود.
+- سایه خاکستری فیلدها تنظیم سطح Word است (View/Options) و در فایل ذخیره نمی‌شود؛ همه فیلدها نتیجه کش‌شده دارند.
+- VIF / نماد CI / نماد β در متن فصل‌ها با همین صورت نیامده‌اند (مفهوم آن‌ها هست) ولی طبق دستور مأموریت در فهرست علائم‌اند.
+- شکل ۲-۱ در منبع فقط کپشن دارد (بدون فایل تصویر)؛ گرافیک آن یک جدول مفهومی است که با همان کپشن در فهرست شکل‌ها پوشش داده می‌شود.
+- اصلاح باگ پرانتز: ران‌های فارسی بدون فونت فصل ۴ به B Nazanin با w:rtl ارتقا یافتند (نویسه‌های پرانتز دست‌نخورده: U+0028/U+0029).
+- تصویر شکل ۴-۱ با run.add_picture درج شده (کتابخانه مالک بایت‌ها، rel و drawing است).
+- کپشن‌ها فیلد SEQ قفل‌شده (fldLock) با همان شماره فارسی دارند؛ فهرست‌ها با \c ساخته می‌شوند و F9 شماره‌ها را عوض نمی‌کند.

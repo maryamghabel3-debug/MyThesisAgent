@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from build_word import (FA_SIZE, EN_SIZE, TABLE_FONT_PT, LINE_SPACING_PT,
                         add_rich_text, base_paragraph, clean_styles,
                         _reorder_ppr, _make_run, _set_paragraph_bidi,
+                        _tblpr_insert,
                         _set_section_rtl, render_table, setup_heading_styles,
                         setup_section, FN_TOKEN, attach_footnotes_part,
                         INSTRUMENTS, _persian_phrase)
@@ -251,7 +252,7 @@ def apa_table_borders(table):
         el.set(qn('w:space'), '0')
         el.set(qn('w:color'), '000000')
         borders.append(el)
-    tblPr.append(borders)
+    _tblpr_insert(tblPr, borders)
     for cell in table.rows[0].cells:
         tcPr = cell._tc.get_or_add_tcPr()
         for old in tcPr.findall(qn('w:tcBorders')):
@@ -287,9 +288,10 @@ def render_apa_table(doc, rows):
             run.bold = (r == 0)
             run.font.size = Pt(11)
     apa_table_borders(table)
-    # bidiVisual پس از tblBorders الحاق شود (ترتیب تحمل‌شده توسط LibreOffice)
+    # درج در جای صحیح طرحواره (پس از tblStyle)؛ الحاق خام خطای Unreadable Content می‌دهد
     if table._tbl.tblPr.find(qn('w:bidiVisual')) is None:
-        table._tbl.tblPr.append(table._tbl.makeelement(qn('w:bidiVisual'), {}))
+        _tblpr_insert(table._tbl.tblPr,
+                      table._tbl.makeelement(qn('w:bidiVisual'), {}))
 
 
 def build(md_path=MD_PATH, fig_path=FIG_PATH, out_path=OUT_PATH):
