@@ -21,6 +21,7 @@ from build_word import (FA_SIZE, EN_SIZE, TABLE_FONT_PT, LINE_SPACING_PT,
                         add_rich_text, base_paragraph, clean_styles,
                         _reorder_ppr, _make_run, _set_paragraph_bidi,
                         _tblpr_insert,
+                        normalize_hamza,
                         _set_section_rtl, render_table, setup_heading_styles,
                         setup_section, FN_TOKEN, attach_footnotes_part,
                         INSTRUMENTS, _persian_phrase)
@@ -280,7 +281,7 @@ def render_apa_table(doc, rows):
             cell = table.cell(r, c)
             cell.text = ''
             par = cell.paragraphs[0]
-            txt = cell_text.strip()
+            txt = normalize_hamza(cell_text.strip())
             if any(_is_fa(ch) for ch in txt):
                 _set_paragraph_bidi(par)
             par.alignment = WD_ALIGN_PARAGRAPH.CENTER
