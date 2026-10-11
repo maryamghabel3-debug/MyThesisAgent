@@ -7,6 +7,7 @@ Pipeline: md --(repo builders)--> fresh intermediate docx in tmpdir
 Never reads output/final/*.docx. Old Word files are not the base.
 """
 import copy
+import posixpath
 import re
 import sys
 import tempfile
@@ -26,9 +27,17 @@ ET.register_namespace('r', 'http://schemas.openxmlformats.org/officeDocument/200
 ET.register_namespace('wp', 'http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing')
 ET.register_namespace('a', 'http://schemas.openxmlformats.org/drawingml/2006/main')
 ET.register_namespace('pic', 'http://schemas.openxmlformats.org/drawingml/2006/picture')
+ET.register_namespace('mc', 'http://schemas.openxmlformats.org/markup-compatibility/2006')
+ET.register_namespace('o', 'urn:schemas-microsoft-com:office:office')
+ET.register_namespace('v', 'urn:schemas-microsoft-com:vml')
+ET.register_namespace('w10', 'urn:schemas-microsoft-com:office:word')
+ET.register_namespace('w14', 'http://schemas.microsoft.com/office/word/2010/wordml')
+ET.register_namespace('m', 'http://schemas.openxmlformats.org/officeDocument/2006/math')
+ET.register_namespace('sl', 'http://schemas.openxmlformats.org/schemaLibrary/2006/main')
 W = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
 R = '{http://schemas.openxmlformats.org/officeDocument/2006/relationships}'
 RN = 'http://schemas.openxmlformats.org/package/2006/relationships'
+OFFDOC = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships'
 CTN = 'http://schemas.openxmlformats.org/package/2006/content-types'
 
 CH13_MD = [ROOT / 'output/drafts/chapter1.md',
@@ -135,17 +144,14 @@ def run_el(text, font='B Nazanin', sz='24', bold=False, italic=False,
 
 
 def para_el(runs, jc=None, rtl=True, exact='580', after=None, outline=None,
-            pstyle=None):
+            pstyle=None, ind=None):
+    # ترتیب CT_PPr در طرحواره: pStyle ... bidi ... spacing ind ... jc ... outlineLvl
     p = ET.Element(W + 'p')
     pr = ET.SubElement(p, W + 'pPr')
     if pstyle:
         ET.SubElement(pr, W + 'pStyle').set(W + 'val', pstyle)
     if rtl:
         ET.SubElement(pr, W + 'bidi')
-    if jc:
-        ET.SubElement(pr, W + 'jc').set(W + 'val', jc)
-    if outline is not None:
-        ET.SubElement(pr, W + 'outlineLvl').set(W + 'val', str(outline))
     if exact or after:
         sp = ET.SubElement(pr, W + 'spacing')
         if exact:
@@ -153,6 +159,14 @@ def para_el(runs, jc=None, rtl=True, exact='580', after=None, outline=None,
             sp.set(W + 'lineRule', 'exact')
         if after:
             sp.set(W + 'after', after)
+    if ind:
+        ie = ET.SubElement(pr, W + 'ind')
+        for k, v in ind.items():
+            ie.set(W + k, v)
+    if jc:
+        ET.SubElement(pr, W + 'jc').set(W + 'val', jc)
+    if outline is not None:
+        ET.SubElement(pr, W + 'outlineLvl').set(W + 'val', str(outline))
     for r in runs:
         p.append(r)
     return p
@@ -275,8 +289,8 @@ def rtl_toc_style(style_id, name, sz, tab_pos, bold=False):
     tab.set(W + 'val', 'left')
     tab.set(W + 'leader', 'dot')
     tab.set(W + 'pos', str(tab_pos))
-    ET.SubElement(pr, W + 'jc').set(W + 'val', 'right')
     ET.SubElement(pr, W + 'bidi').set(W + 'val', '1')
+    ET.SubElement(pr, W + 'jc').set(W + 'val', 'right')
     rp = ET.SubElement(st, W + 'rPr')
     rf = ET.SubElement(rp, W + 'rFonts')
     rf.set(W + 'ascii', 'Times New Roman')
@@ -344,7 +358,8 @@ def abbrev_table():
     pr = ET.SubElement(tbl, W + 'tblPr')
     ET.SubElement(pr, W + 'tblStyle').set(W + 'val', 'TableGrid')
     ET.SubElement(pr, W + 'bidiVisual')
-    grid = ET.SubElement(pr, W + 'tblGrid')
+    # tblGrid فرزند tbl است (پس از tblPr) نه فرزند tblPr
+    grid = ET.SubElement(tbl, W + 'tblGrid')
     for w in ('2200', '6021'):
         ET.SubElement(grid, W + 'gridCol').set(W + 'w', w)
     rows = [('علامت اختصاری', 'معادل فارسی / توضیح', True)] + [
@@ -354,9 +369,9 @@ def abbrev_table():
         for txt, sym_col in ((sym, True), (fa, False)):
             tc = ET.SubElement(tr, W + 'tc')
             tcpr = ET.SubElement(tc, W + 'tcPr')
-            ET.SubElement(tcpr, W + 'tcW').set(W + 'w', '2200' if sym_col
-                                               else '6021')
-            ET.SubElement(tcpr, W + 'tcW').set(W + 'type', 'dxa')
+            tcw = ET.SubElement(tcpr, W + 'tcW')
+            tcw.set(W + 'w', '2200' if sym_col else '6021')
+            tcw.set(W + 'type', 'dxa')
             if sym_col and not head:
                 tc.append(para_el([run_el(txt, font='Times New Roman',
                                           sz='22')],
@@ -482,7 +497,7 @@ def joint_para(model, footer_rid, **kw):
     return p
 
 
-def footer_xml(numbered, cache):
+def footer_xml(numbered, cache, lang_bidi=None):
     ftr = ET.Element(W + 'ftr')
     if not numbered:
         ftr.append(ET.Element(W + 'p'))
@@ -494,8 +509,189 @@ def footer_xml(numbered, cache):
     ET.SubElement(pr, W + 'jc').set(W + 'val', 'center')
     fs = ET.SubElement(p, W + 'fldSimple')
     fs.set(W + 'instr', ' PAGE ')
-    fs.append(run_el(cache, sz='24'))
+    run = run_el(cache, sz='24', rtl=lang_bidi is not None)
+    if lang_bidi:
+        lang = ET.SubElement(run.find(W + 'rPr'), W + 'lang')
+        lang.set(W + 'bidi', lang_bidi)
+    fs.append(run)
     return ftr
+
+
+TCPR_ORDER = ['cnfStyle', 'tcW', 'gridSpan', 'hMerge', 'vMerge',
+              'tcBorders', 'shd', 'noWrap', 'tcMar', 'textDirection',
+              'tcFitText', 'vAlign', 'hideMark']
+
+# از XSD انتقالی: rPr پیش از tblPr می‌آید
+STYLE_ORDER = ['name', 'aliases', 'basedOn', 'next', 'link', 'autoRedefine',
+               'hidden', 'uiPriority', 'semiHidden', 'unhideWhenUsed',
+               'qFormat', 'locked', 'personal', 'personalCompose',
+               'personalReply', 'rsid', 'pPr', 'rPr', 'tblPr', 'trPr',
+               'tcPr', 'tblStylePr']
+
+NUMFMTS = set('''decimal upperRoman lowerRoman upperLetter lowerLetter
+    ordinal cardinalText ordinalText hex chicago ideographDigital
+    japaneseCounting aiueo iroha decimalFullWidth decimalHalfWidth
+    japaneseLegal japaneseDigitalTenThousand decimalEnclosedCircle
+    decimalFullWidth2 aiueoFullWidth irohaFullWidth decimalZero bullet
+    ganada chosung decimalEnclosedFullstop decimalEnclosedParen
+    decimalEnclosedCircleChinese ideographEnclosedCircle
+    ideographTraditional ideographZodiac ideographZodiacTraditional
+    taiwaneseCounting ideographLegalTraditional taiwaneseCountingThousand
+    taiwaneseDigital chineseCounting chineseLegalSimplified
+    chineseCountingThousand koreanDigital koreanCounting koreanLegal
+    koreanDigital2 vietnameseCounting russianLower russianUpper none
+    numberInDash hebrew1 hebrew2 arabicAlpha arabicAbjad hindiVowels
+    hindiConsonants hindiNumbers hindiCounting thaiLetters thaiNumbers
+    thaiCounting bahtText dollarText custom'''.split())
+
+
+def _assert_order(el, order, where):
+    pos = -1
+    seen = set()
+    for c in list(el):
+        if not c.tag.startswith(W):
+            continue
+        t = c.tag[len(W):]
+        if t not in order:
+            continue
+        if t not in ('headerReference', 'footerReference', 'tblStylePr'):
+            assert t not in seen, f'{where}: duplicate <{t}>'
+            seen.add(t)
+        p = order.index(t)
+        assert p >= pos, f'{where}: <{t}> out of schema order'
+        pos = p
+
+
+def _set_outline_lvl(pPr, val):
+    """Set pPr outlineLvl once (builders pre-mark kickers); schema position:
+    before divId/cnfStyle/rPr/sectPr."""
+    old = pPr.find(W + 'outlineLvl')
+    if old is not None:
+        assert old.get(W + 'val') == val, (
+            old.get(W + 'val'), val)
+        return
+    el = ET.Element(W + 'outlineLvl')
+    el.set(W + 'val', val)
+    for c in list(pPr):
+        if c.tag.startswith(W) and c.tag[len(W):] in (
+                'divId', 'cnfStyle', 'rPr', 'sectPr', 'pPrChange'):
+            pPr.insert(list(pPr).index(c), el)
+            return
+    pPr.append(el)
+
+
+def validate_package(path):
+    """Post-build gate: well-formed XML + OPC integrity + ECMA-376 child
+    order + numbering-enum values. Raises (fails the build) on any defect."""
+    z = zipfile.ZipFile(path)
+    parts = {}
+    for name in z.namelist():
+        if name.endswith('.xml') or name.endswith('.rels'):
+            try:
+                parts[name] = ET.fromstring(z.read(name))
+            except ET.ParseError as e:
+                raise AssertionError(f'{name}: not well-formed: {e}')
+    # OPC: rel targets exist, no duplicate Ids
+    for name, root in parts.items():
+        if not name.endswith('.rels'):
+            continue
+        if name == '_rels/.rels':
+            base = ''
+        else:
+            base = name.split('/_rels/')[0] + '/'
+        seen = set()
+        for r in root.findall(f'{{{RN}}}Relationship'):
+            rid = r.get('Id')
+            assert rid not in seen, f'{name}: duplicate {rid}'
+            seen.add(rid)
+            tgt = r.get('Target', '')
+            mode = r.get('TargetMode', 'Internal')
+            rtype = r.get('Type', '')
+            if name == '_rels/.rels':
+                assert rtype.startswith((RN + '/', OFFDOC + '/')), \
+                    f'{name}: bad rel Type {rtype}'
+            else:
+                assert rtype.startswith(OFFDOC + '/') or rtype == (
+                    'http://schemas.microsoft.com/office/2007/relationships/'
+                    'stylesWithEffects'), f'{name}: bad rel Type {rtype}'
+            if mode == 'Internal' and not tgt.startswith('/'):
+                norm = posixpath.normpath(base + tgt)
+                assert norm in z.namelist(), \
+                    f'{name}: missing target {tgt}'
+    # OPC: content-type coverage for word parts
+    ct = parts['[Content_Types].xml']
+    over = {e.get('PartName') for e in ct
+            if e.tag == f'{{{CTN}}}Override'}
+    dflt = {e.get('Extension') for e in ct
+            if e.tag == f'{{{CTN}}}Default'}
+    for name in z.namelist():
+        if not name.startswith('word/') or name.endswith('.rels'):
+            continue
+        assert ('/' + name in over
+                or name.rsplit('.', 1)[-1] in dflt), f'no CT for {name}'
+    # schema child order + enums + field balance
+    for name, root in parts.items():
+        if not (name.startswith('word/') and name.endswith('.xml')):
+            continue
+        for el in root.iter():
+            if not el.tag.startswith(W):
+                continue
+            t = el.tag[len(W):]
+            if t == 'pPr':
+                _assert_order(el, build_word._PPR_ORDER, name)
+            elif t == 'rPr':
+                _assert_order(el, build_word._RPR_ORDER, name)
+            elif t == 'sectPr':
+                _assert_order(el, SECT_ORDER, name)
+            elif t == 'tblPr':
+                _assert_order(el, build_word._TBLPR_ORDER, name)
+            elif t == 'tcPr':
+                _assert_order(el, TCPR_ORDER, name)
+            elif t == 'tbl':
+                kids = [c.tag[len(W):] for c in list(el)
+                        if c.tag.startswith(W)]
+                assert kids[0] == 'tblPr', f'{name}: tbl w/o tblPr first'
+                assert 'tblGrid' in kids, f'{name}: tbl w/o tblGrid'
+                assert (kids.index('tblGrid') <
+                        kids.index('tr')), f'{name}: tblGrid after tr'
+            elif t == 'style':
+                _assert_order(el, STYLE_ORDER, name)
+            elif t in ('pgNumType', 'numFmt'):
+                v = el.get(W + ('fmt' if t == 'pgNumType' else 'val'))
+                assert v in NUMFMTS, f'{name}: bad num format {v!r}'
+            elif t == 'zoom':
+                assert el.get(W + 'percent'), f'{name}: zoom w/o percent'
+    # body: exactly one direct sectPr, last
+    doc = parts['word/document.xml']
+    kids = list(doc.find(W + 'body'))
+    assert sum(1 for c in kids if c.tag == W + 'sectPr') == 1, \
+        'body sectPr count != 1'
+    assert kids[-1].tag == W + 'sectPr', 'body must end with sectPr'
+    # field balance in document order (fields may span paragraphs)
+    for name, root in parts.items():
+        if not (name.startswith('word/') and name.endswith('.xml')):
+            continue
+        depth = 0
+        for fc in root.findall(f'.//{W}fldChar'):
+            kt = fc.get(W + 'fldCharType')
+            if kt == 'begin':
+                depth += 1
+            elif kt == 'end':
+                assert depth > 0, f'{name}: stray fldChar end'
+                depth -= 1
+            elif kt == 'separate':
+                assert depth > 0, f'{name}: stray separate'
+        assert depth == 0, f'{name}: unclosed field'
+    # image/rel cross-check
+    doc = parts['word/document.xml']
+    rels = {r.get('Id'): r.get('Target') for r in
+            parts['word/_rels/document.xml.rels'].findall(
+                f'{{{RN}}}Relationship')}
+    for b in doc.findall('.//{http://schemas.openxmlformats.org/drawingml'
+                         '/2006/main}blip'):
+        emb = b.get(R + 'embed')
+        assert emb in rels, f'dangling blip {emb}'
+        assert 'word/' + rels[emb] in z.namelist(), f'missing {rels[emb]}'
 
 
 def extract_refs(blocks):
@@ -588,13 +784,9 @@ def ref_para_fa(text):
 
 
 def ref_para_la(text):
-    p = para_el([run_el(text, font='Times New Roman', sz='22')],
-                jc='left', after='40')
-    ind = ET.Element(W + 'ind')
-    ind.set(W + 'left', '720')
-    ind.set(W + 'hanging', '720')
-    p.find(W + 'pPr').append(ind)
-    return p
+    return para_el([run_el(text, font='Times New Roman', sz='22')],
+                   jc='left', after='40',
+                   ind={'left': '720', 'hanging': '720'})
 
 
 def main():
@@ -630,7 +822,8 @@ def main():
         t5 = top_paras(k5)
         i5 = [i for i, c in t5
               if re.sub(r'\s+', ' ', T(c)).strip() == 'منابع'][0]
-        ch4 = copy.deepcopy(k4)
+        ch4 = copy.deepcopy([c for c in k4
+                             if c.tag != W + 'sectPr'])
         ch5 = copy.deepcopy(k5[:i5])
         refs5 = k5[i5:]
         assert not [c for c in top_paras(k4)[0:]
@@ -639,6 +832,10 @@ def main():
         nstrip = 0
         for blk in (ch1, ch2, ch3, ch4, ch5):
             for c in list(blk):
+                if c.tag == W + 'sectPr':
+                    blk.remove(c)
+                    nstrip += 1
+                    continue
                 if c.tag == W + 'p' and c.find(
                         f'{W}pPr/{W}sectPr') is not None:
                     assert not re.sub(r'\s+', ' ', T(c)).strip()
@@ -718,8 +915,7 @@ def main():
                 elif sid in ('Heading3', 'Heading4'):
                     lvl = ('2', (t, 'TOC3'), 'n2')
                 if lvl:
-                    ET.SubElement(c.find(W + 'pPr'), W + 'outlineLvl').set(
-                        W + 'val', lvl[0])
+                    _set_outline_lvl(c.find(W + 'pPr'), lvl[0])
                     c_contents.append(lvl[1])
                     if lvl[2] == 'n0':
                         n0 += 1
@@ -754,24 +950,24 @@ def main():
         n = 1
         while f'rId{n}' in ids:
             n += 1
-        rid_empty, rid_roman, rid_hindi = f'rId{n}', f'rId{n+1}', f'rId{n+2}'
+        rid_empty, rid_roman, rid_body = f'rId{n}', f'rId{n+1}', f'rId{n+2}'
 
         new = (front7 + [joint_para(model, rid_empty)]
                + lists4 + [joint_para(model, rid_roman, fmt='upperRoman')]
-               + ch1 + [joint_para(model, rid_hindi, fmt='hindi', start=1,
+               + ch1 + [joint_para(model, rid_body, fmt='decimal', start=1,
                                    title_pg=True)]
-               + ch2 + [joint_para(model, rid_hindi, fmt='hindi',
+               + ch2 + [joint_para(model, rid_body, fmt='decimal',
                                    title_pg=True)]
-               + ch3 + [joint_para(model, rid_hindi, fmt='hindi',
+               + ch3 + [joint_para(model, rid_body, fmt='decimal',
                                    title_pg=True)]
-               + ch4 + [joint_para(model, rid_hindi, fmt='hindi',
+               + ch4 + [joint_para(model, rid_body, fmt='decimal',
                                    title_pg=True)]
                + ch5 + [page_break_para()] + refs)
         for c in list(body):
             body.remove(c)
         for c in new:
             body.append(c)
-        body.append(sect_props(model, rid_hindi, fmt='hindi',
+        body.append(sect_props(model, rid_body, fmt='decimal',
                                title_pg=True))
 
         styles = ET.fromstring(zb.read('word/styles.xml'))
@@ -796,10 +992,10 @@ def main():
                 rels.remove(r)
         for rid, tgt in ((rid_empty, 'footer1.xml'),
                          (rid_roman, 'footer2.xml'),
-                         (rid_hindi, 'footer3.xml')):
+                         (rid_body, 'footer3.xml')):
             nr = ET.SubElement(rels, f'{{{RN}}}Relationship')
             nr.set('Id', rid)
-            nr.set('Type', f'{RN}/footer')
+            nr.set('Type', f'{OFFDOC}/footer')
             nr.set('Target', tgt)
         ct = ET.fromstring(zb.read('[Content_Types].xml'))
         for e in list(ct):
@@ -811,18 +1007,30 @@ def main():
             o.set('PartName', f'/word/footer{k}.xml')
             o.set('ContentType', 'application/vnd.openxmlformats-officedocument'
                   '.wordprocessingml.footer+xml')
-        settings = zb.read('word/settings.xml')
-        assert b'updateFields' not in settings
-        anchor = b'<w:characterSpacingControl'
-        if settings.count(anchor) != 1:
-            anchor = b'<w:defaultTabStop'
-        if settings.count(anchor) != 1:
-            anchor = b'</w:settings>'
-            settings = settings.replace(
-                anchor, b'<w:updateFields w:val="1"/>' + anchor, 1)
-        else:
-            settings = settings.replace(
-                anchor, b'<w:updateFields w:val="1"/>' + anchor, 1)
+        settings_el = ET.fromstring(zb.read('word/settings.xml'))
+        assert settings_el.find(W + 'updateFields') is None
+        uf = ET.Element(W + 'updateFields')
+        uf.set(W + 'val', '1')
+        # CT_Settings: updateFields < hdrShapeDefaults < footnotePr <
+        #              endnotePr < compat < docVars < rsids
+        placed = False
+        for follower in ('hdrShapeDefaults', 'footnotePr', 'endnotePr',
+                         'compat', 'docVars', 'rsids'):
+            anchor_el = settings_el.find(W + follower)
+            if anchor_el is not None:
+                settings_el.insert(list(settings_el).index(anchor_el), uf)
+                placed = True
+                break
+        assert placed, 'no updateFields anchor in settings.xml'
+        zoom = settings_el.find(W + 'zoom')
+        if zoom is not None:
+            # CT_Zoom takes w:percent, not w:val="bestFit"
+            for k in list(zoom.attrib):
+                del zoom.attrib[k]
+            zoom.set(W + 'percent', '100')
+        settings = ('<?xml version="1.0" encoding="UTF-8" '
+                    'standalone="yes"?>\n'
+                    + ET.tostring(settings_el, encoding='unicode'))
 
         with zipfile.ZipFile(OUT, 'w', zipfile.ZIP_DEFLATED) as z:
             for name in zb.namelist():
@@ -851,7 +1059,7 @@ def main():
                        xml_decl + ET.tostring(footer_xml(True, 'i'),
                                               encoding='unicode'))
             z.writestr('word/footer3.xml',
-                       xml_decl + ET.tostring(footer_xml(True, '۱'),
+                       xml_decl + ET.tostring(footer_xml(True, '۱', 'fa-IR'),
                                               encoding='unicode'))
 
     from docx import Document as _DocxDocument
@@ -876,7 +1084,9 @@ def main():
     _para = next(p for p in _d.paragraphs if p._p is _figp)
     _para.runs[0].add_picture(str(CH4_FIG), width=Cm(14))
     _d.save(str(OUT))
+    validate_package(OUT)
     log.append('- fig 4-1 embedded via python-docx add_picture (14cm)')
+    log.append('- package gate: well-formed + OPC + schema orders + enums OK')
 
     abstract_n = len(ABSTRACT.split())
     report = ['# گزارش ساخت thesis_complete_draft_v2', '',
@@ -907,6 +1117,15 @@ def main():
     report += ['## یادداشت‌ها', '',
                '- شماره‌گذاری: مقدماتی (۱-۷) بی‌شماره؛ فهرست‌ها (۸-۱۱) رومی؛ '
                'متن فارسی پیوسته از فصل ۱؛ صفحه اول هر فصل بی‌شماره ولی به حساب.',
+               '- قالب شماره صفحه متن و پاورقی decimal است (معتبر در طرحواره)؛ '
+               'با Numeral=Context در Word فارسی و زبان fa-IR فوتر، ارقام فارسی '
+               '۰۱۲۳ نمایش داده می‌شوند. مقدار hindi عضو ST_NumberFormat نیست.',
+               '- رفع خطای Unreadable Content: نوع rel فوترها (officeDocument)، '
+               'ترتیب pPr (spacing/ind پیش از jc)، ترتیب pPr استایل‌های TOC، '
+               'جای tblGrid (فرزند tbl)، جای updateFields (پیش از compat)، '
+               'zoom (percent)، ترتیب tblPr جدول‌ها (bidiVisual/tblBorders) و '
+               'مقادیر numFmt همگی با XSD انتقالی ECMA-376 اعتبارسنجی شدند؛ '
+               'گیت validate_package پس از هر ساخت اجرا می‌شود.',
                '- سایه خاکستری فیلدها تنظیم سطح Word است (View/Options) و در '
                'فایل ذخیره نمی‌شود؛ همه فیلدها نتیجه کش‌شده دارند.',
                '- VIF / نماد CI / نماد β در متن فصل‌ها با همین صورت نیامده‌اند '

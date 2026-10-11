@@ -52,10 +52,13 @@
   FLAG: mahato, s., et al. (2025). millennials and zoomers as invest <-> mahato, s., et al. (2025). millennials and zoomers as invest
   FLAG: ololo, k., et al. (2024). rational emotive and cognitive beh <-> ololo, k., et al. (2024). rational emotive and cognitive beh
 - fig 4-1 embedded via python-docx add_picture (14cm)
+- package gate: well-formed + OPC + schema orders + enums OK
 
 ## یادداشت‌ها
 
 - شماره‌گذاری: مقدماتی (۱-۷) بی‌شماره؛ فهرست‌ها (۸-۱۱) رومی؛ متن فارسی پیوسته از فصل ۱؛ صفحه اول هر فصل بی‌شماره ولی به حساب.
+- قالب شماره صفحه متن و پاورقی decimal است (معتبر در طرحواره)؛ با Numeral=Context در Word فارسی و زبان fa-IR فوتر، ارقام فارسی ۰۱۲۳ نمایش داده می‌شوند. مقدار hindi عضو ST_NumberFormat نیست.
+- رفع خطای Unreadable Content: نوع rel فوترها (officeDocument)، ترتیب pPr (spacing/ind پیش از jc)، ترتیب pPr استایل‌های TOC، جای tblGrid (فرزند tbl)، جای updateFields (پیش از compat)، zoom (percent)، ترتیب tblPr جدول‌ها (bidiVisual/tblBorders) و مقادیر numFmt همگی با XSD انتقالی ECMA-376 اعتبارسنجی شدند؛ گیت validate_package پس از هر ساخت اجرا می‌شود.
 - سایه خاکستری فیلدها تنظیم سطح Word است (View/Options) و در فایل ذخیره نمی‌شود؛ همه فیلدها نتیجه کش‌شده دارند.
 - VIF / نماد CI / نماد β در متن فصل‌ها با همین صورت نیامده‌اند (مفهوم آن‌ها هست) ولی طبق دستور مأموریت در فهرست علائم‌اند.
 - شکل ۲-۱ در منبع فقط کپشن دارد (بدون فایل تصویر)؛ گرافیک آن یک جدول مفهومی است که با همان کپشن در فهرست شکل‌ها پوشش داده می‌شود.
