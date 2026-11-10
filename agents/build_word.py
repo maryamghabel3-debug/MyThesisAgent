@@ -8,7 +8,7 @@
   با w:hint="cs" + <w:rtl/> + <w:lang w:bidi="fa-IR"/>؛ لاتین = Times New Roman بدون rtl
 - حذف همهٔ صفات theme فونت از styles.xml (docDefaults و استایل‌ها)
 - پاورقی لاتین نام نویسندگان خارجی در اولین استناد (املای لاتین فقط از فهرست منابع)
-- شماره‌گذاری پاورقی در هر صفحه از ۱ (footnotePr/numRestart=eachPage) + اعداد فارسی (numFmt=hindi)
+- شماره‌گذاری پاورقی در هر صفحه از ۱ (footnotePr/numRestart=eachPage) + اعداد فارسی (numFmt=decimal با Context فارسی)
 مأموریت ۴۵: معادل انگلیسی اصطلاحات فقط در اولین کاربرد در کل سند (مقدماتی←فصل۱←۲←۳)
 به پاورقی می‌رود؛ کاربردهای بعدی (از جمله تیترها) پاک‌سازی می‌شوند. واحدهای ابزار
 (STAI-Y2/YSQ-SF/GL-RTS) یک پاورقی سراسری با نام کامل+کد می‌گیرند؛ جدول‌ها استثنا هستند؛
@@ -323,6 +323,25 @@ def _ppr_insert(pPr, el):
             child.addprevious(el)
             return el
     pPr.append(el)
+    return el
+
+
+# ترتیب صحیح فرزندان tblPr در اسکیمای OOXML (CT_TblPr؛ tblGrid فرزند tbl است نه tblPr)
+_TBLPR_ORDER = ['tblStyle', 'tblpPr', 'tblOverlap', 'bidiVisual',
+                'tblStyleRowBandSize', 'tblStyleColBandSize', 'tblW', 'jc',
+                'tblCellSpacing', 'tblInd', 'tblBorders', 'shd', 'tblLayout',
+                'tblCellMar', 'tblLook', 'tblCaption', 'tblDescription']
+
+
+def _tblpr_insert(tblPr, el):
+    """درج عنصر tblPr در جای صحیح طرحواره (الحاق خام ترتیب را می‌شکند)."""
+    local = lambda e: e.tag.split('}')[-1]
+    for child in tblPr:
+        if local(child) in _TBLPR_ORDER and local(el) in _TBLPR_ORDER \
+                and _TBLPR_ORDER.index(local(child)) > _TBLPR_ORDER.index(local(el)):
+            child.addprevious(el)
+            return el
+    tblPr.append(el)
     return el
 
 
@@ -1153,7 +1172,7 @@ def render_table(doc, rows):
     table.style = 'Table Grid'
     tblPr = table._tbl.tblPr
     if tblPr.find(qn('w:bidiVisual')) is None:
-        tblPr.append(tblPr.makeelement(qn('w:bidiVisual'), {}))
+        _tblpr_insert(tblPr, tblPr.makeelement(qn('w:bidiVisual'), {}))
     for r, row in enumerate(rows):
         for c, cell_text in enumerate(row):
             if c >= len(rows[0]):
@@ -1172,7 +1191,7 @@ def render_conceptual_figure(doc, caption):
     table.style = 'Table Grid'
     tblPr = table._tbl.tblPr
     if tblPr.find(qn('w:bidiVisual')) is None:
-        tblPr.append(tblPr.makeelement(qn('w:bidiVisual'), {}))
+        _tblpr_insert(tblPr, tblPr.makeelement(qn('w:bidiVisual'), {}))
     header = ['اضطراب صفتی (متغیر مستقل)',
               'طرحواره‌های ناسازگار اولیه (متغیر میانجی)',
               'رفتارهای مالی پرخطر (متغیر وابسته)']
@@ -1220,17 +1239,19 @@ def setup_section(section, numbering='none', page_start=None, title_pg=False,
     for tag in ('w:pgNumType', 'w:titlePg', 'w:vAlign', 'w:footnotePr'):
         for el in section._sectPr.findall(qn(tag)):
             section._sectPr.remove(el)
-    # شروع شمارهٔ پاورقی در هر صفحه از ۱ + اعداد فارسی (راهنما ص ۱۷)
+    # شروع شمارهٔ پاورقی در هر صفحه از ۱ + اعداد فارسی (راهنما ص ۱۷).
+    # decimal معتبرِ طرحواره است و با Numeral=Context در Word فارسی ۰۱۲۳ می‌شود
+    # ('hindi' خالی عضوی از ST_NumberFormat نیست و خطای Unreadable Content می‌دهد)
     _insert_sectpr_element(
         section, 'w:footnotePr', None,
-        (('w:numFmt', {qn('w:val'): 'hindi'}),
+        (('w:numFmt', {qn('w:val'): 'decimal'}),
          ('w:numRestart', {qn('w:val'): 'eachPage'})))
     if vcenter:
         _insert_sectpr_element(section, 'w:vAlign', {qn('w:val'): 'center'})
     if numbering == 'none':
         clear_footer(section)
     else:
-        num_attrs = {qn('w:numFmt'): 'hindi' if numbering == 'hindi' else 'upperRoman'}
+        num_attrs = {qn('w:fmt'): 'decimal' if numbering == 'hindi' else 'upperRoman'}
         if page_start is not None:
             num_attrs[qn('w:start')] = str(page_start)
         _insert_sectpr_element(section, 'w:pgNumType', num_attrs)
