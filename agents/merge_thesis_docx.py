@@ -206,6 +206,58 @@ def main():
         body.append(el)
     body.append(sect)
 
+    # ---- page-number hygiene (duplicate-number fix) ----
+    # Footers/footnotes/settings are copied verbatim from the base docx,
+    # so sanitizing + asserting here defines the output state.
+    def _page_count(xml_bytes):
+        r = ET.fromstring(xml_bytes)
+        n = 0
+        for e in r.findall(f'.//{Q("fldSimple")}'):
+            if (e.get(Q('instr')) or '').strip() == 'PAGE':
+                n += 1
+        for e in r.findall(f'.//{Q("instrText")}'):
+            if 'PAGE' in (e.text or ''):
+                n += 1
+        return n
+    assert _page_count(ET.tostring(rb, encoding='UTF-8')) == 0, \
+        'PAGE field in body'
+    assert _page_count(zb.read('word/footnotes.xml')) == 0, \
+        'PAGE field in footnotes'
+    fn_root = ET.fromstring(zb.read('word/footnotes.xml'))
+    seps = [f for f in fn_root.findall(Q('footnote'))
+            if f.get(Q('type')) in ('separator', 'continuationSeparator')]
+    assert len(seps) == 2, 'footnote separators missing'
+    for f in seps:
+        assert not ''.join(t.text or ''
+                           for t in f.findall(f'.//{Q("t")}')).strip(), \
+            'separator carries text'
+        assert (f.find(f'.//{Q("separator")}') is not None
+                or f.find(f'.//{Q("continuationSeparator")}') is not None), \
+            'separator line lost'
+    for k in range(1, 11):
+        c = _page_count(zb.read(f'word/footer{k}.xml'))
+        if k in (3, 4, 6, 8, 10):
+            assert c == 1, f'footer{k} must hold exactly 1 PAGE, got {c}'
+        else:
+            assert c == 0, f'footer{k} must hold 0 PAGE, got {c}'
+    # base used non-standard w:numFmt on pgNumType (Word ignores it and
+    # falls back to Latin digits on update) -> normalize to w:fmt="hindi"
+    nfmt = 0
+    for sp in rb.findall(f'.//{Q("pgNumType")}'):
+        if (sp.get(Q('numFmt')) is not None
+                and sp.get(Q('fmt')) is None):
+            sp.set(Q('fmt'), sp.get(Q('numFmt')))
+            del sp.attrib[Q('numFmt')]
+            nfmt += 1
+    assert nfmt == 5, f'expected 5 pgNumType normalizations, got {nfmt}'
+    # update fields on open: PAGE caches ('1') must never stay stale
+    settings = zb.read('word/settings.xml')
+    assert b'updateFields' not in settings, 'updateFields already set'
+    anchor = b'<w:characterSpacingControl'
+    assert settings.count(anchor) == 1, 'settings anchor not unique'
+    settings = settings.replace(anchor, b'<w:updateFields w:val="1"/>'
+                              + anchor, 1)
+
     # ---- write output ----
     ct_root = ET.fromstring(zb.read('[Content_Types].xml'))
     CT = 'http://schemas.openxmlformats.org/package/2006/content-types'
@@ -218,17 +270,19 @@ def main():
     with zipfile.ZipFile(OUT, 'w', zipfile.ZIP_DEFLATED) as zout:
         for name in zb.namelist():
             if name in ('word/document.xml', 'word/_rels/document.xml.rels',
-                        '[Content_Types].xml'):
+                        'word/settings.xml', '[Content_Types].xml'):
                 continue
             zout.writestr(name, zb.read(name))
         zout.writestr('word/document.xml',
                       ET.tostring(rb, encoding='UTF-8', xml_declaration=True))
         zout.writestr('word/_rels/document.xml.rels', rels_bytes)
+        zout.writestr('word/settings.xml', settings)
         zout.writestr('[Content_Types].xml', ct_bytes)
         zout.writestr('word/media/image1.png', img_bytes)
 
     print(f'ch4 runs font-pinned: {pinned}')
     print(f'refs: FA={len(fa_list)} Latin={len(la_list)} dupes_removed={dupes}')
+    print(f'pgNumType normalized: {nfmt} | updateFields: on')
     print('wrote', OUT)
 
 
